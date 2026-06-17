@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ODSL Top Times · Willowsford North Waves</title>
+<style>
+  :root{
+    --navy:#0a3d5e; --navy-dk:#072c45; --blue:#029ed6; --blue-dk:#0277a0;
+    --blue-tint:#E4F4FC; --blue-soft:#CDEAF8;
+    --ink:#0a2e44; --muted:#5C7689; --bg:#EAF1F5; --card:#FFFFFF;
+    --line:#D7E3EC; --line2:#EDF3F7;
+    --rope:#B5271A; --rope-dk:#7E1A11;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Georgia","Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--sans); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.45}
+  .wrap{max-width:1060px; margin:0 auto; padding:0 16px 64px}
+
+  /* ---------- masthead ---------- */
+  .masthead{position:relative; overflow:hidden; color:#fff;
+    background:linear-gradient(120deg, var(--navy) 0%, var(--navy) 42%, var(--blue-dk) 100%)}
+  .mast-inner{max-width:1060px; margin:0 auto; padding:22px 16px 30px; display:flex; align-items:center; gap:18px; position:relative; z-index:2; flex-wrap:wrap}
+  .badge{background:#fff; border-radius:14px; padding:8px 10px; box-shadow:0 6px 18px rgba(0,0,0,.22); flex:0 0 auto; line-height:0}
+  .badge img{height:62px; width:auto; display:block}
+  .brand{flex:1 1 auto; min-width:200px}
+  .brand .eyebrow{font-family:var(--serif); font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#7FD3F2; margin:0 0 3px; font-weight:700}
+  .brand h1{font-family:var(--serif); font-size:clamp(24px,4.6vw,38px); margin:0; font-weight:700; letter-spacing:.005em; color:#fff}
+  .stamp{margin-left:auto; text-align:right; font-size:12px; color:#BFE3F2}
+  .stamp .big{display:block; font-family:var(--mono); font-size:14px; color:#fff; margin-top:2px}
+  .waves-svg{position:absolute; left:0; right:0; bottom:-1px; width:100%; height:34px; display:block; z-index:1}
+
+  /* ---------- filter console ---------- */
+  .console{position:sticky; top:0; z-index:20; background:rgba(234,241,245,.93); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+  .console-inner{max-width:1060px; margin:0 auto; padding:12px 16px; display:flex; gap:14px 18px; align-items:flex-end; flex-wrap:wrap}
+  .field{display:flex; flex-direction:column; gap:5px}
+  .field > label{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:700}
+  .seg{display:inline-flex; background:#fff; border:1px solid var(--line); border-radius:11px; padding:3px; gap:3px}
+  .seg button{appearance:none; border:0; background:transparent; cursor:pointer; font:inherit; font-weight:700; padding:7px 18px; border-radius:8px; color:var(--muted); transition:background .15s,color .15s}
+  .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--navy),var(--blue-dk)); color:#fff}
+  select{appearance:none; font:inherit; font-weight:600; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 34px 9px 12px; min-width:172px; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C7689' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center}
+  select:focus-visible,.seg button:focus-visible,.toggle input:focus-visible{outline:3px solid var(--blue); outline-offset:2px}
+  .toggle{display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none; font-size:13.5px; font-weight:600; color:var(--ink); padding-bottom:9px}
+  .toggle input{width:42px; height:24px; appearance:none; background:#C3D4DD; border-radius:99px; position:relative; cursor:pointer; transition:background .18s}
+  .toggle input::after{content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff; border-radius:50%; transition:transform .18s; box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .toggle input:checked{background:var(--blue)}
+  .toggle input:checked::after{transform:translateX(18px)}
+
+  /* ---------- event head + chips ---------- */
+  .eventhead{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:20px 0 12px}
+  .eventhead h2{font-family:var(--serif); margin:0; font-size:clamp(20px,3.4vw,27px); font-weight:700; color:var(--navy)}
+  .eventhead h2 span{color:var(--muted); font-weight:400}
+  .chips{display:flex; gap:8px; flex-wrap:wrap}
+  .chip{font-size:12.5px; font-weight:700; padding:6px 11px; border-radius:99px; border:1px solid var(--line); background:#fff; color:var(--ink); display:inline-flex; align-items:center; gap:6px}
+  .chip b{font-family:var(--mono)}
+  .chip.wave{background:var(--blue-tint); border-color:var(--blue); color:var(--navy)}
+  .chip.qual{background:#EAF7FE; border-color:var(--blue-dk); color:var(--blue-dk)}
+  .chip.cut{background:#FBE7E4; border-color:var(--rope); color:var(--rope-dk)}
+  .dot{width:8px; height:8px; border-radius:50%}
+  .dot.wave{background:var(--blue)} .dot.cut{background:var(--rope)}
+
+  /* ---------- table ---------- */
+  .board{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; box-shadow:0 1px 2px rgba(10,46,68,.05)}
+  table{width:100%; border-collapse:collapse}
+  thead th{background:var(--navy); color:#CFE6F2; font-size:11px; letter-spacing:.12em; text-transform:uppercase; font-weight:700; text-align:left; padding:11px 12px}
+  th.num,td.num{text-align:right; font-variant-numeric:tabular-nums; font-family:var(--mono)}
+  th.ctr,td.ctr{text-align:center}
+  tbody td{padding:10px 12px; border-top:1px solid var(--line2); font-size:14px; vertical-align:middle}
+  tbody tr:hover:not(.cutrow){background:#F4FAFD}
+  .rank{font-family:var(--mono); font-weight:700; text-align:center; min-width:30px; height:26px; line-height:26px; border-radius:7px; background:#EEF3F6; color:var(--ink); display:inline-block; padding:0 7px}
+  tr.qualified .rank{background:var(--blue); color:#fff}
+  .swim{font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .meta{display:none; font-size:12px; color:var(--muted); font-weight:500; margin-top:2px}
+  .team{color:var(--muted); font-size:13px}
+  td.time{font-family:var(--mono); font-weight:700; font-size:15px; color:var(--ink)}
+
+  tr.wave td{background:var(--blue-tint)}
+  tr.wave td:first-child{box-shadow:inset 4px 0 0 var(--blue)}
+  .wbadge{display:inline-flex; align-items:center; gap:4px; background:var(--navy); color:#fff; font-size:9.5px; font-weight:800; letter-spacing:.1em; padding:2px 7px 2px 5px; border-radius:99px; vertical-align:middle}
+  .wbadge svg{width:14px; height:8px}
+
+  /* cut line — solid, legible, with a thin lane-rope accent on top */
+  tr.cutrow td{padding:0}
+  .rope{position:relative; display:flex; align-items:center; gap:12px; padding:9px 12px; color:#fff; background:var(--rope); border-bottom:2px solid var(--rope-dk)}
+  .rope::before{content:""; position:absolute; left:0; right:0; top:0; height:4px; background:repeating-linear-gradient(90deg, #fff 0 9px, var(--rope-dk) 9px 13px)}
+  .rope .tag{background:#fff; color:var(--rope-dk); font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:99px; white-space:nowrap}
+  .rope .t{font-family:var(--mono); font-weight:800; font-size:15px; background:var(--rope-dk); color:#fff; padding:3px 10px; border-radius:7px}
+  .rope .note{font-size:12.5px; color:#fff; font-weight:600}
+
+  .empty{padding:30px 16px; text-align:center; color:var(--muted); font-weight:600}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; margin:12px 2px 0; font-size:12.5px; color:var(--muted)}
+  .legend span{display:inline-flex; align-items:center; gap:7px}
+  .sw{width:14px; height:14px; border-radius:4px; border:1px solid rgba(0,0,0,.08)}
+  .sw.wave{background:var(--blue-tint); border-color:var(--blue)} .sw.cut{background:var(--rope)} .sw.qual{background:var(--blue)}
+
+  .disclaimer{margin-top:22px; background:#FBE7E4; border:1px solid var(--rope); border-radius:12px; padding:13px 15px; font-size:13px; color:#6B1A12}
+  .disclaimer b{color:var(--rope-dk)}
+
+  @media (max-width:700px){
+    thead th.col-team,thead th.col-meet,thead th.col-date,
+    tbody td.col-team,tbody td.col-meet,tbody td.col-date{display:none}
+    .meta{display:block}
+    .badge img{height:48px}
+    select{min-width:138px; flex:1}
+    .field.ev,.field.ag{flex:1 1 138px}
+    .stamp{margin-left:0; text-align:left; width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} }
+  tbody{animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(3px)} to{opacity:1; transform:none}}
+</style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="mast-inner">
+      <div class="badge"><img src="/*LOGO*/" alt="Willowsford North Waves logo"></div>
+      <div class="brand">
+        <p class="eyebrow" id="eyebrow">Willowsford North Waves · 2026 Season</p>
+        <h1>ODSL Top Times</h1>
+      </div>
+      <div class="stamp">Top times as of<span class="big" id="asof">—</span></div>
+    </div>
+    <svg class="waves-svg" viewBox="0 0 1440 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 22 C 180 4, 320 40, 540 22 S 900 4, 1080 22 1440 22 1440 40 0 40 Z" fill="#029ed6" opacity="0.55"/>
+      <path d="M0 30 C 200 14, 360 44, 600 30 S 980 14, 1200 30 1440 30 1440 40 0 40 Z" fill="#EAF1F5"/>
+    </svg>
+  </header>
+
+  <div class="console">
+    <div class="console-inner">
+      <div class="field">
+        <label>Gender</label>
+        <div class="seg" id="sex" role="group" aria-label="Gender">
+          <button type="button" data-sex="Girls" aria-pressed="true">Girls</button>
+          <button type="button" data-sex="Boys" aria-pressed="false">Boys</button>
+        </div>
+      </div>
+      <div class="field ag">
+        <label for="age">Age group</label>
+        <select id="age"></select>
+      </div>
+      <div class="field ev">
+        <label for="event">Event</label>
+        <select id="event"></select>
+      </div>
+      <label class="toggle"><input type="checkbox" id="waveOnly"><span>Willowsford North only</span></label>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <div class="eventhead">
+      <h2 id="title">—</h2>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="board">
+      <table>
+        <thead>
+          <tr>
+            <th class="ctr" style="width:54px">Rank</th>
+            <th>Swimmer</th>
+            <th class="ctr" style="width:48px">Age</th>
+            <th class="col-team">Team</th>
+            <th class="num" style="width:84px">Time</th>
+            <th class="col-meet">Meet</th>
+            <th class="col-date" style="width:78px">Date</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden></div>
+    </div>
+
+    <div class="legend">
+      <span><i class="sw wave"></i> Willowsford North Waves swimmer</span>
+      <span><i class="sw cut"></i> 2025 All-Star cut line</span>
+      <span><i class="sw qual"></i> at or above the 2025 cut</span>
+    </div>
+
+    <div class="disclaimer" id="disclaimer"></div>
+  </main>
+
+<script>
+const DATA = /*DATA*/;
+const CUTS = /*CUTS*/;
+const META = /*META*/;
+const $=s=>document.querySelector(s);
+const WAVE='<svg viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 7 Q5 1 9 7 T17 7 T27 5" stroke="#7FD3F2" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+
+const state={sex:'Girls', grp:null, st:null, waveOnly:false};
+const YR=META.year, PROV=META.provisional;
+document.getElementById('asof').textContent=META.asof;
+document.getElementById('eyebrow').textContent=META.team_nm+' · '+META.season;
+document.getElementById('disclaimer').innerHTML = PROV
+  ? '<b>Heads up:</b> the cut line in each event is the <b>'+YR+'</b> All-Star qualifying time, shown for reference only. '+
+    'The current-season cut times have not been released yet and may be faster or slower — being above the '+YR+' line is not a guarantee of qualification.'
+  : '<b>Note:</b> the cut line in each event is the official <b>'+YR+'</b> All-Star qualifying standard. Times above the line meet the standard for that event.';
+
+const GMERGE={'7-8':'7-8 / 8 & Under','8 & Under':'7-8 / 8 & Under','9-10':'9-10 / 10 & Under','10 & Under':'9-10 / 10 & Under'};
+const groupOf=br=>GMERGE[br]||br;
+const GROUP_ORDER=(()=>{const seen=[];META.bracket_order.forEach(b=>{const g=groupOf(b);if(!seen.includes(g))seen.push(g);});return seen;})();
+function groups(sex){const have=new Set(DATA.filter(r=>r.sex===sex).map(r=>groupOf(r.br)));return GROUP_ORDER.filter(g=>have.has(g));}
+function strokes(sex,grp){const have=new Set(DATA.filter(r=>r.sex===sex&&groupOf(r.br)===grp).map(r=>r.st));return META.stroke_order.filter(s=>have.has(s));}
+function recOf(sex,grp,st){return DATA.find(r=>r.sex===sex&&groupOf(r.br)===grp&&r.st===st);}
+
+function fillAge(){
+  const sel=$('#age'); sel.innerHTML=''; const gs=groups(state.sex);
+  if(!gs.includes(state.grp)) state.grp=gs[0];
+  gs.forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;sel.appendChild(o);});
+  sel.value=state.grp;
+}
+function fillEvent(){
+  const sel=$('#event'); sel.innerHTML=''; const ss=strokes(state.sex,state.grp);
+  if(!ss.includes(state.st)) state.st=ss[0];
+  ss.forEach(s=>{const r=recOf(state.sex,state.grp,s);const o=document.createElement('option');o.value=s;o.textContent=r.d+' '+s;sel.appendChild(o);});
+  sel.value=state.st;
+}
+
+function render(){
+  const {sex,grp,st,waveOnly}=state;
+  const field=DATA.filter(r=>r.sex===sex&&groupOf(r.br)===grp&&r.st===st).sort((a,b)=>a.pl-b.pl);
+  const agl=field.length?field[0].agl:'';
+  const dist=field.length?field[0].d:'';
+  const br=field.length?field[0].br:'';
+  const cut=CUTS[sex+'|'+br+'|'+st]||null;
+  $('#title').innerHTML=agl+' <span>· '+dist+' '+st+'</span>';
+
+  const waveN=field.filter(r=>r.ab===META.team_ab).length;
+  const qualN=cut?field.filter(r=>r.h<=cut.h).length:null;
+  const chips=$('#chips'); chips.innerHTML='';
+  const mk=(cls,html)=>{const d=document.createElement('div');d.className='chip '+cls;d.innerHTML=html;chips.appendChild(d);};
+  mk('','<b>'+field.length+'</b>&nbsp;swimmers');
+  mk('wave','<i class="dot wave"></i><b>'+waveN+'</b>&nbsp;'+META.team_short);
+  if(cut) mk('qual','<b>'+qualN+'</b>&nbsp;at/above '+YR+' cut');
+  if(cut) mk('cut','<i class="dot cut"></i>'+YR+' cut&nbsp;<b>'+cut.t+'</b>');
+
+  const tb=$('#rows'); tb.innerHTML=''; const empty=$('#empty');
+  const visible=waveOnly?field.filter(r=>r.ab===META.team_ab):field;
+  if(visible.length===0){
+    empty.hidden=false;
+    empty.textContent=waveOnly?('No '+META.team_nm+' swimmers ranked in this event.'):'No times found for this event.';
+    return;
+  }
+  empty.hidden=true;
+
+  let inserted=!cut;
+  const rope=()=>{
+    const tr=document.createElement('tr'); tr.className='cutrow';
+    const td=document.createElement('td'); td.colSpan=7;
+    const note=PROV?('times above this line met the '+YR+' standard · current cut TBD')
+                   :('times above this line meet the '+YR+' All-Star standard');
+    td.innerHTML='<div class="rope"><span class="tag">'+YR+' All-Star Cut</span><span class="t">'+cut.t+
+      '</span><span class="note">'+note+'</span></div>';
+    tr.appendChild(td); tb.appendChild(tr);
+  };
+
+  field.forEach(r=>{
+    if(!inserted && r.h>cut.h){ rope(); inserted=true; }
+    if(waveOnly && r.ab!==META.team_ab) return;
+    const isWave=r.ab===META.team_ab;
+    const qual=cut && r.h<=cut.h;
+    const tr=document.createElement('tr');
+    tr.className=(isWave?'wave ':'')+(qual?'qualified':'');
+    const badge=isWave?'<span class="wbadge">'+WAVE+'WAVES</span>':'';
+    tr.innerHTML=
+      '<td class="ctr"><span class="rank">'+r.pl+'</span></td>'+
+      '<td><div class="swim">'+r.nm+badge+'</div><div class="meta">'+r.tm+' · '+r.mt+' · '+r.dt+'</div></td>'+
+      '<td class="ctr num">'+r.a+'</td>'+
+      '<td class="col-team team">'+r.tm+'</td>'+
+      '<td class="num time">'+r.t+'</td>'+
+      '<td class="col-meet team">'+r.mt+'</td>'+
+      '<td class="col-date num team">'+r.dt+'</td>';
+    tb.appendChild(tr);
+  });
+  if(!inserted) rope();
+}
+
+$('#sex').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return;
+  state.sex=b.dataset.sex; [...$('#sex').children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+  fillAge(); fillEvent(); render();});
+$('#age').addEventListener('change',e=>{state.grp=e.target.value; fillEvent(); render();});
+$('#event').addEventListener('change',e=>{state.st=e.target.value; render();});
+$('#waveOnly').addEventListener('change',e=>{state.waveOnly=e.target.checked; render();});
+
+fillAge(); fillEvent(); render();
+</script>
+</body>
+</html>
