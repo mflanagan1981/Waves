@@ -20,11 +20,17 @@ Usage:
 import argparse, os, re, sys, urllib.request
 
 PAGE = "https://odsl.swimtopia.com/results"
-UA = "Mozilla/5.0 (compatible; ODSL-Waves-bot/1.0)"
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://odsl.swimtopia.com/",
+}
 ANCHOR = re.compile(r'<a[^>]+href="([^"]*?/sites/s3_files/(\d+))"[^>]*>(.*?)</a>', re.I | re.S)
 
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read(), r.headers
 
