@@ -1,16 +1,20 @@
-# ODSL Top Times — rebuild BOTH pages when you upload a new CSV
+# ODSL Top Times — rebuild the league page when you upload a new CSV
 #
 # Goes at: .github/workflows/update_top_times.yml  (replace the old contents)
 #
-# Each CSV upload rebuilds:
-#   index.html        -> Willowsford North Waves page (compact header)
-#   odsl/index.html   -> Old Dominion Swim League page (full header)
+# Builds ONE page (the ODSL league version) and publishes it at BOTH:
+#   index.html        -> https://mflanagan1981.github.io/Waves/
+#   odsl/index.html   -> https://mflanagan1981.github.io/Waves/odsl/
+# so every existing link keeps working and shows the same page.
 #
-# Needs the latest build tooling in the repo under tools/ (from tools.zip) and
+# Teams embed with their own code + compact header, e.g.:
+#   .../Waves/odsl/?team=WWNOR&compact=1
+#
+# Needs the build tooling in the repo under tools/ and
 # Settings > Actions > General > Workflow permissions = "Read and write".
 #
 # When the 2026 All-Star standards are published: edit tools/references/cut_standards.csv,
-# then add to BOTH build steps below:  --standards-label 2026 --official
+# then add to the build step below:  --standards-label 2026 --official
 
 name: Build ODSL Top Times
 
@@ -55,16 +59,16 @@ jobs:
           echo "csv=$latest" >> "$GITHUB_OUTPUT"
           echo "Using: $latest"
 
-      - name: Build Willowsford North Waves page (root)
-        run: python tools/scripts/build_gadget.py --csv "${{ steps.pick.outputs.csv }}" --out index.html --header compact
-
-      - name: Build Old Dominion Swim League page (odsl/)
+      - name: Build the ODSL league page
         run: python tools/scripts/build_gadget.py --csv "${{ steps.pick.outputs.csv }}" --skin odsl --out odsl/index.html
+
+      - name: Publish it at the site root too
+        run: cp odsl/index.html index.html
 
       - name: Commit & push
         run: |
           git config user.name  "odsl-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html odsl/index.html
-          git diff --cached --quiet || git commit -m "Rebuild top times (Waves + ODSL) from $(basename '${{ steps.pick.outputs.csv }}')"
+          git diff --cached --quiet || git commit -m "Rebuild ODSL Top Times from $(basename '${{ steps.pick.outputs.csv }}')"
           git push
