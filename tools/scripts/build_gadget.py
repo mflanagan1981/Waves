@@ -33,6 +33,19 @@ SKILL = Path(__file__).resolve().parent.parent
 ASSETS = SKILL / "assets"
 REFS = SKILL / "references"
 
+# League skin: deeper marine navy + league blue; hide the per-team logo badge (text header).
+ODSL_CSS = (
+    ":root{--navy:#00004A;--navy-dk:#000033;--blue:#2350A8;--blue-dk:#173C82;"
+    "--blue-tint:#E8ECF7;--blue-soft:#CCD8F0;--rope:#D30000;--rope-dk:#960000}"
+    "body.compact .masthead{border-bottom-color:#FE0000}"
+)
+SKIN_DEFAULTS = {
+    'waves': dict(brand_name='Willowsford North Waves', brand_short='Willowsford North',
+                  default_team='WWNOR', logo=str(ASSETS / 'waves_logo.png'), brandcss=''),
+    'odsl':  dict(brand_name='', brand_short='ODSL',
+                  default_team='',  logo=str(ASSETS / 'odsl_logo.png'), brandcss=ODSL_CSS),
+}
+
 BRACKET_ORDER = ['6 & Under','7-8','8 & Under','9-10','10 & Under','11-12','13-14','15-18']
 STROKE_ORDER  = ['Freestyle','Backstroke','Breaststroke','Butterfly','Individual Medley']
 MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -93,6 +106,20 @@ def load_cuts(cuts_path):
             cuts[key] = {'t': ct, 'h': to_h(ct)}
     return cuts
 
+def load_names(names_path):
+    """Return {abbr: display_name} for cleaning up raw team labels; empty if file absent."""
+    names = {}
+    p = Path(names_path)
+    if not p.exists():
+        return names
+    with open(p, newline='', encoding='utf-8-sig') as f:
+        for r in csv.DictReader(f):
+            ab = (r.get('abbr') or '').strip()
+            nm = (r.get('name') or '').strip()
+            if ab and nm:
+                names[ab] = nm
+    return names
+
 def encode_logo(logo_path, target_w=260):
     """Crop near-white border, resize, return data: URI. Falls back to raw encode."""
     raw = Path(logo_path).read_bytes()
@@ -118,27 +145,47 @@ def main():
     ap.add_argument('--csv', required=True)
     ap.add_argument('--out', default='index.html')
     ap.add_argument('--cuts', default=str(REFS / 'cut_standards.csv'))
+    ap.add_argument('--names', default=str(REFS / 'team_names.csv'),
+                    help="CSV of abbr,name to clean up raw team labels in the picklist/rows.")
     ap.add_argument('--template', default=str(ASSETS / 'template.html'))
-    ap.add_argument('--logo', default=str(ASSETS / 'waves_logo.png'))
+    ap.add_argument('--logo', default=None,
+                    help="Logo image. Default: the skin's logo (Waves crest for 'waves', none for 'odsl').")
     ap.add_argument('--standards-label', default='2025')
     ap.add_argument('--official', action='store_true')
     ap.add_argument('--asof', default=None)
     ap.add_argument('--season', default='2026 ODSL season')
-    ap.add_argument('--team-abbr', default='WWNOR')
-    ap.add_argument('--team-name', default='Willowsford North Waves')
-    ap.add_argument('--team-short', default='Willowsford North')
+    ap.add_argument('--skin', choices=['waves', 'odsl'], default='waves',
+                    help="Brand skin. 'waves' = Willowsford North; 'odsl' = league-wide.")
+    ap.add_argument('--brand-name', default=None, help="Header brand name (defaults per skin).")
+    ap.add_argument('--brand-short', default=None, help="Short brand label (defaults per skin).")
+    ap.add_argument('--default-team', default=None,
+                    help="Team abbr highlighted on load ('' = none). Defaults per skin; "
+                         "any visitor can change it via the picklist or a ?team= URL param.")
+    ap.add_argument('--header', choices=['full', 'compact'], default='full',
+                    help="Masthead style. 'compact' = slim strip for embedding under a site header.")
     a = ap.parse_args()
+
+    sk = SKIN_DEFAULTS[a.skin]
+    brand_name   = a.brand_name   if a.brand_name   is not None else sk['brand_name']
+    brand_short  = a.brand_short  if a.brand_short  is not None else sk['brand_short']
+    default_team = a.default_team if a.default_team is not None else sk['default_team']
+    logo_path    = a.logo         if a.logo         is not None else sk['logo']
+    brandcss     = sk['brandcss']
 
     records = load_records(a.csv)
     if not records:
         sys.exit("No rows parsed from CSV — check the file.")
     cuts = load_cuts(a.cuts)
+    names = load_names(a.names)
     asof = a.asof or derive_asof(a.csv, records)
 
     meta = {
         'asof': asof, 'season': a.season,
-        'team_ab': a.team_abbr, 'team_nm': a.team_name, 'team_short': a.team_short,
+        'brand_nm': brand_name, 'brand_short': brand_short,
+        'default_team': default_team, 'skin': a.skin,
+        'names': names,
         'year': a.standards_label, 'provisional': (not a.official),
+        'header': a.header,
         'bracket_order': BRACKET_ORDER, 'stroke_order': STROKE_ORDER,
     }
 
@@ -146,19 +193,22 @@ def main():
     html = html.replace('/*DATA*/', json.dumps(records, separators=(',', ':')))
     html = html.replace('/*CUTS*/', json.dumps(cuts, separators=(',', ':')))
     html = html.replace('/*META*/', json.dumps(meta, separators=(',', ':')))
-    html = html.replace('/*LOGO*/', encode_logo(a.logo))
+    html = html.replace('/*BRANDCSS*/', brandcss)
+    html = html.replace('/*LOGO*/', encode_logo(logo_path) if logo_path else '')
 
     left = sum(html.count(p) for p in ('/*DATA*/', '/*CUTS*/', '/*META*/', '/*LOGO*/'))
     if left:
         sys.exit(f"Build error: {left} placeholder(s) not filled — template mismatch.")
 
-    Path(a.out).write_text(html)
+    out_path = Path(a.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(html)
     n_cut = sum(1 for r in records if f"{r['sex']}|{r['br']}|{r['st']}" in cuts)
     events = len({(r['sex'], r['br'], r['st']) for r in records})
     print(f"Wrote {a.out} ({len(html):,} bytes)")
     print(f"  {len(records)} swimmers · {events} events · standards label '{a.standards_label}'"
           f" ({'official' if a.official else 'provisional/reference'})")
-    print(f"  as of: {asof or '(unknown)'} · team highlight: {a.team_abbr}")
+    print(f"  as of: {asof or '(unknown)'} · skin: {a.skin} · default highlight: {default_team or '(none)'}")
     miss = sorted({f"{r['sex']} {r['br']} {r['st']}" for r in records
                    if f"{r['sex']}|{r['br']}|{r['st']}" not in cuts})
     if miss:

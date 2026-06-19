@@ -15,6 +15,7 @@
     --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --serif:"Georgia","Times New Roman",serif;
   }
+  /*BRANDCSS*/
   *{box-sizing:border-box}
   html,body{margin:0}
   body{font-family:var(--sans); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.45}
@@ -32,6 +33,18 @@
   .stamp{margin-left:auto; text-align:right; font-size:12px; color:#BFE3F2}
   .stamp .big{display:block; font-family:var(--mono); font-size:14px; color:#fff; margin-top:2px}
   .waves-svg{position:absolute; left:0; right:0; bottom:-1px; width:100%; height:34px; display:block; z-index:1}
+
+  /* ---------- compact masthead (for embedding under another site header) ---------- */
+  body.compact .mast-inner{padding:9px 16px; gap:10px}
+  body.compact .badge{display:none}
+  body.compact .brand .eyebrow{display:none}
+  body.compact .brand h1{font-size:17px; letter-spacing:.01em}
+  body.compact .stamp{font-size:11px}
+  body.compact .stamp .big{display:inline; margin:0 0 0 5px; font-size:12px}
+  body.compact .waves-svg{display:none}
+  body.compact .masthead{border-bottom:3px solid var(--blue)}
+  .toggle.disabled{opacity:.45}
+  .toggle.disabled input{cursor:default}
 
   /* ---------- filter console ---------- */
   .console{position:sticky; top:0; z-index:20; background:rgba(234,241,245,.93); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
@@ -147,7 +160,11 @@
         <label for="event">Event</label>
         <select id="event"></select>
       </div>
-      <label class="toggle"><input type="checkbox" id="waveOnly"><span>Willowsford North only</span></label>
+      <div class="field tm">
+        <label for="team">Highlight team</label>
+        <select id="team"></select>
+      </div>
+      <label class="toggle" id="onlyWrap"><input type="checkbox" id="waveOnly"><span id="onlyLabel">Selected team only</span></label>
     </div>
   </div>
 
@@ -191,10 +208,34 @@ const META = /*META*/;
 const $=s=>document.querySelector(s);
 const WAVE='<svg viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 7 Q5 1 9 7 T17 7 T27 5" stroke="#7FD3F2" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
 
-const state={sex:'Girls', grp:null, st:null, waveOnly:false};
+// --- teams (derived from the data) + which one to highlight ---
+const NAMES=META.names||{};
+const dispTeam=r=>NAMES[r.ab]||r.tm;
+const TEAMS=(()=>{const m=new Map();DATA.forEach(r=>{if(!m.has(r.ab))m.set(r.ab,NAMES[r.ab]||r.tm);});
+  return [...m.entries()].map(([ab,nm])=>({ab,nm})).sort((a,b)=>a.nm.localeCompare(b.nm));})();
+const teamName=ab=>{const t=TEAMS.find(x=>x.ab===ab);return t?t.nm:ab;};
+const urlTeam=(()=>{try{const q=new URLSearchParams(location.search).get('team');if(!q)return null;
+  const v=q.trim().toLowerCase();const t=TEAMS.find(x=>x.ab.toLowerCase()===v||x.nm.toLowerCase()===v);return t?t.ab:null;}catch(e){return null;}})();
+const state={sex:'Girls', grp:null, st:null, team:(urlTeam||META.default_team||''), waveOnly:false};
 const YR=META.year, PROV=META.provisional;
 document.getElementById('asof').textContent=META.asof;
-document.getElementById('eyebrow').textContent=META.team_nm+' · '+META.season;
+document.getElementById('eyebrow').textContent=(META.brand_nm?META.brand_nm+' · ':'')+META.season;
+(function(){let h=META.header;const c=new URLSearchParams(location.search).get('compact');
+  if(c==='1'||c==='true')h='compact';else if(c==='0'||c==='false')h='full';
+  if(h==='compact')document.body.classList.add('compact');})();
+
+function fillTeam(){
+  const sel=$('#team'); sel.innerHTML='';
+  const all=document.createElement('option'); all.value=''; all.textContent='All teams'; sel.appendChild(all);
+  TEAMS.forEach(t=>{const o=document.createElement('option');o.value=t.ab;o.textContent=t.nm;sel.appendChild(o);});
+  sel.value=state.team;
+}
+function syncOnly(){
+  const has=!!state.team;
+  const cb=$('#waveOnly'); cb.disabled=!has; if(!has){cb.checked=false; state.waveOnly=false;}
+  $('#onlyWrap').classList.toggle('disabled',!has);
+  $('#onlyLabel').textContent = has ? ('Only '+teamName(state.team)) : 'Selected team only';
+}
 document.getElementById('disclaimer').innerHTML = PROV
   ? '<b>Heads up:</b> the cut line in each event is the <b>'+YR+'</b> All-Star qualifying time, shown for reference only. '+
     'The current-season cut times have not been released yet and may be faster or slower — being above the '+YR+' line is not a guarantee of qualification.'
@@ -229,20 +270,22 @@ function render(){
   const cut=CUTS[sex+'|'+br+'|'+st]||null;
   $('#title').innerHTML=agl+' <span>· '+dist+' '+st+'</span>';
 
-  const waveN=field.filter(r=>r.ab===META.team_ab).length;
+  const team=state.team;
+  const teamN=team?field.filter(r=>r.ab===team).length:0;
   const qualN=cut?field.filter(r=>r.h<=cut.h).length:null;
   const chips=$('#chips'); chips.innerHTML='';
   const mk=(cls,html)=>{const d=document.createElement('div');d.className='chip '+cls;d.innerHTML=html;chips.appendChild(d);};
   mk('','<b>'+field.length+'</b>&nbsp;swimmers');
-  mk('wave','<i class="dot wave"></i><b>'+waveN+'</b>&nbsp;'+META.team_short);
+  if(team) mk('wave','<i class="dot wave"></i><b>'+teamN+'</b>&nbsp;'+team);
   if(cut) mk('qual','<b>'+qualN+'</b>&nbsp;at/above '+YR+' cut');
   if(cut) mk('cut','<i class="dot cut"></i>'+YR+' cut&nbsp;<b>'+cut.t+'</b>');
 
   const tb=$('#rows'); tb.innerHTML=''; const empty=$('#empty');
-  const visible=waveOnly?field.filter(r=>r.ab===META.team_ab):field;
+  const onlyTeam=waveOnly&&team;
+  const visible=onlyTeam?field.filter(r=>r.ab===team):field;
   if(visible.length===0){
     empty.hidden=false;
-    empty.textContent=waveOnly?('No '+META.team_nm+' swimmers ranked in this event.'):'No times found for this event.';
+    empty.textContent=onlyTeam?('No '+teamName(team)+' swimmers ranked in this event.'):'No times found for this event.';
     return;
   }
   empty.hidden=true;
@@ -260,17 +303,18 @@ function render(){
 
   field.forEach(r=>{
     if(!inserted && r.h>cut.h){ rope(); inserted=true; }
-    if(waveOnly && r.ab!==META.team_ab) return;
-    const isWave=r.ab===META.team_ab;
+    if(onlyTeam && r.ab!==team) return;
+    const isHL=team && r.ab===team;
     const qual=cut && r.h<=cut.h;
     const tr=document.createElement('tr');
-    tr.className=(isWave?'wave ':'')+(qual?'qualified':'');
-    const badge=isWave?'<span class="wbadge">'+WAVE+'WAVES</span>':'';
+    tr.className=(isHL?'wave ':'')+(qual?'qualified':'');
+    const badge=isHL?'<span class="wbadge">'+WAVE+r.ab+'</span>':'';
+    const tnm=dispTeam(r);
     tr.innerHTML=
       '<td class="ctr"><span class="rank">'+r.pl+'</span></td>'+
-      '<td><div class="swim">'+r.nm+badge+'</div><div class="meta">'+r.tm+' · '+r.mt+' · '+r.dt+'</div></td>'+
+      '<td><div class="swim">'+r.nm+badge+'</div><div class="meta">'+tnm+' · '+r.mt+' · '+r.dt+'</div></td>'+
       '<td class="ctr num">'+r.a+'</td>'+
-      '<td class="col-team team">'+r.tm+'</td>'+
+      '<td class="col-team team">'+tnm+'</td>'+
       '<td class="num time">'+r.t+'</td>'+
       '<td class="col-meet team">'+r.mt+'</td>'+
       '<td class="col-date num team">'+r.dt+'</td>';
@@ -284,9 +328,10 @@ $('#sex').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b
   fillAge(); fillEvent(); render();});
 $('#age').addEventListener('change',e=>{state.grp=e.target.value; fillEvent(); render();});
 $('#event').addEventListener('change',e=>{state.st=e.target.value; render();});
+$('#team').addEventListener('change',e=>{state.team=e.target.value; syncOnly(); render();});
 $('#waveOnly').addEventListener('change',e=>{state.waveOnly=e.target.checked; render();});
 
-fillAge(); fillEvent(); render();
+fillTeam(); syncOnly(); fillAge(); fillEvent(); render();
 </script>
 </body>
 </html>
