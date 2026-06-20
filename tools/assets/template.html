@@ -199,9 +199,9 @@
     </div>
 
     <div class="legend">
-      <span><i class="sw wave"></i> Willowsford North Waves swimmer</span>
-      <span><i class="sw cut"></i> 2025 All-Star cut line</span>
-      <span><i class="sw qual"></i> at or above the 2025 cut</span>
+      <span id="legWave"><i class="sw wave"></i> <span class="lt"></span></span>
+      <span><i class="sw cut"></i> <span id="legCut"></span></span>
+      <span><i class="sw qual"></i> <span id="legQual"></span></span>
     </div>
 
     <div class="disclaimer" id="disclaimer"></div>
@@ -241,11 +241,16 @@ function syncOnly(){
   const cb=$('#waveOnly'); cb.disabled=!has; if(!has){cb.checked=false; state.waveOnly=false;}
   $('#onlyWrap').classList.toggle('disabled',!has);
   $('#onlyLabel').textContent = has ? ('Only '+teamName(state.team)) : 'Selected team only';
+  const lw=$('#legWave');
+  if(has){ lw.querySelector('.lt').textContent = teamName(state.team)+' swimmer'; lw.style.display=''; }
+  else { lw.style.display='none'; }
 }
 document.getElementById('disclaimer').innerHTML = PROV
   ? '<b>Heads up:</b> the cut line in each event is the <b>'+YR+'</b> All-Star qualifying time, shown for reference only. '+
     'The current-season cut times have not been released yet and may be faster or slower — being above the '+YR+' line is not a guarantee of qualification.'
   : '<b>Note:</b> the cut line in each event is the official <b>'+YR+'</b> All-Star qualifying standard. Times above the line meet the standard for that event.';
+document.getElementById('legCut').textContent = YR+' All-Star cut line';
+document.getElementById('legQual').textContent = 'at or above the '+YR+' cut';
 
 const GMERGE={'7-8':'7-8 / 8 & Under','8 & Under':'7-8 / 8 & Under','9-10':'9-10 / 10 & Under','10 & Under':'9-10 / 10 & Under'};
 const groupOf=br=>GMERGE[br]||br;
