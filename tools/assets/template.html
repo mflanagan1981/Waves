@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <title>ODSL Top Times · Willowsford North Waves</title>
 <style>
   :root{
+    color-scheme: light;
     --navy:#0a3d5e; --navy-dk:#072c45; --blue:#029ed6; --blue-dk:#0277a0;
     --blue-tint:#E4F4FC; --blue-soft:#CDEAF8;
     --ink:#0a2e44; --muted:#5C7689; --bg:#EAF1F5; --card:#FFFFFF;
@@ -107,6 +110,39 @@
   .empty{padding:30px 16px; text-align:center; color:var(--muted); font-weight:600}
   .legend{display:flex; gap:18px; flex-wrap:wrap; margin:12px 2px 0; font-size:12.5px; color:var(--muted)}
   .legend span{display:inline-flex; align-items:center; gap:7px}
+  /* view tabs */
+  .tabs{display:flex; gap:4px; padding:12px 16px 0; max-width:1180px; margin:0 auto; flex-wrap:wrap}
+  .tab{appearance:none; border:1px solid transparent; border-bottom:0; cursor:pointer; font:inherit;
+    font-weight:700; font-size:14px; padding:9px 18px; border-radius:10px 10px 0 0;
+    background:transparent; color:var(--muted); transition:color .15s,background .15s}
+  .tab:hover{color:var(--navy)}
+  .tab[aria-selected="true"]{background:var(--card); color:var(--navy); border-color:var(--line);
+    box-shadow:0 -2px 6px rgba(10,30,60,.05)}
+  /* swimmer search + view */
+  input.search{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:11px;
+    font:inherit; font-size:16px; background:#fff; color:var(--ink)}
+  input.search:focus-visible{outline:3px solid var(--blue); outline-offset:2px}
+  .swimhead{margin:18px 2px 12px}
+  .swimhead .nm{font-family:var(--serif); font-size:clamp(20px,3.6vw,28px); font-weight:700; color:var(--navy); margin:0}
+  .swimhead .sub{color:var(--muted); margin:3px 0 12px; font-size:14.5px}
+  .swimhead .chips{display:flex; gap:8px; flex-wrap:wrap}
+  .swimhead .prompt{padding:34px 16px; text-align:center; color:var(--muted); font-size:15px}
+  .vs{font-family:var(--mono); font-weight:700; font-size:13px}
+  .vs.q{color:var(--blue-dk)} .vs.n{color:var(--muted)}
+  .cuttime{color:var(--muted); font-weight:600}
+  tr.grouphdr td{background:var(--blue-tint); padding:9px 12px; border-top:3px solid var(--card)}
+  tr.grouphdr .gn{font-weight:800; color:var(--navy)}
+  tr.grouphdr .ga{color:var(--muted); font-size:12.5px; margin-left:8px}
+  tr.grouphdr .gc{color:var(--blue-dk); font-size:12.5px; font-weight:700; margin-left:10px}
+  /* swimmer typeahead */
+  .acwrap{position:relative}
+  .ac{position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid var(--line);
+    border-radius:11px; box-shadow:0 10px 26px rgba(10,30,60,.14); max-height:300px; overflow:auto; z-index:40; padding:4px}
+  .ac .opt{padding:9px 11px; border-radius:8px; cursor:pointer; display:flex; justify-content:space-between; gap:12px; align-items:baseline}
+  .ac .opt:hover{background:var(--blue-tint)}
+  .ac .opt .nm{font-weight:700; color:var(--ink)}
+  .ac .opt .tm{color:var(--muted); font-size:13px; white-space:nowrap}
+  .ac .none{padding:11px; color:var(--muted)}
   .sw{width:14px; height:14px; border-radius:4px; border:1px solid rgba(0,0,0,.08)}
   .sw.wave{background:var(--blue-tint); border-color:var(--blue)} .sw.cut{background:var(--rope)} .sw.qual{background:var(--blue)}
 
@@ -116,6 +152,9 @@
   @media (max-width:700px){
     thead th.col-team,thead th.col-meet,thead th.col-date,
     tbody td.col-team,tbody td.col-meet,tbody td.col-date{display:none}
+    #swimView .col-rank{display:none}
+    .ac .opt{flex-direction:column; align-items:stretch; gap:2px}
+    .ac .opt .tm{white-space:normal}
     .meta{display:block}
     .badge img{height:48px}
     .stamp{margin-left:0; text-align:left; width:100%}
@@ -149,7 +188,13 @@
     </svg>
   </header>
 
-  <div class="console">
+  <nav class="tabs" id="tabs" role="tablist" aria-label="View">
+    <button class="tab" data-mode="rank" role="tab" aria-selected="true">Rankings</button>
+    <button class="tab" data-mode="swim" role="tab" aria-selected="false">Swimmer</button>
+    <button class="tab" data-mode="team" role="tab" aria-selected="false">Team Qualifiers</button>
+  </nav>
+
+  <div class="console" id="rankConsole">
     <div class="console-inner">
       <div class="field">
         <label>Gender</label>
@@ -174,7 +219,37 @@
     </div>
   </div>
 
+  <div class="console" id="swimConsole" hidden>
+    <div class="console-inner">
+      <div class="field" style="flex:1 1 100%">
+        <label for="swimSearch">Find a swimmer</label>
+        <div class="acwrap">
+          <input id="swimSearch" class="search" placeholder="Type a name…" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="swimAC" aria-autocomplete="list">
+          <div class="ac" id="swimAC" role="listbox" hidden></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="console" id="teamConsole" hidden>
+    <div class="console-inner">
+      <div class="field tm" style="flex:2 1 240px">
+        <label for="taTeam">Team</label>
+        <select id="taTeam"></select>
+      </div>
+      <div class="field" style="flex:1 1 150px">
+        <label for="taSort">Sort by</label>
+        <select id="taSort">
+          <option value="last">Last name</option>
+          <option value="first">First name</option>
+          <option value="age">Age group</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
   <main class="wrap">
+   <div id="rankView">
     <div class="eventhead">
       <h2 id="title">—</h2>
       <div class="chips" id="chips"></div>
@@ -200,17 +275,54 @@
 
     <div class="legend">
       <span id="legWave"><i class="sw wave"></i> <span class="lt"></span></span>
-      <span><i class="sw cut"></i> <span id="legCut"></span></span>
       <span><i class="sw qual"></i> <span id="legQual"></span></span>
+      <span><i class="sw cut"></i> <span id="legCut"></span></span>
     </div>
 
     <div class="disclaimer" id="disclaimer"></div>
+   </div>
+
+   <div id="swimView" hidden>
+     <div class="swimhead" id="swimHead"></div>
+     <div class="board" id="swimBoard" hidden>
+       <table>
+         <thead><tr>
+           <th>Event</th>
+           <th class="ctr col-rank" style="width:54px">Rank</th>
+           <th class="num" style="width:84px">Time</th>
+           <th class="num" style="width:84px">Cut</th>
+           <th class="ctr" style="width:74px">Vs cut</th>
+           <th class="col-meet">Meet &middot; Date</th>
+         </tr></thead>
+         <tbody id="swimRows"></tbody>
+       </table>
+       <div class="empty" id="swimEmpty" hidden></div>
+     </div>
+   </div>
+
+   <div id="teamView" hidden>
+     <div class="swimhead" id="taHead"></div>
+     <div class="board" id="taBoard" hidden>
+       <table>
+         <thead><tr>
+           <th>Event</th>
+           <th class="ctr" style="width:64px">Rank</th>
+           <th class="num" style="width:100px">Time</th>
+         </tr></thead>
+         <tbody id="taRows"></tbody>
+       </table>
+     </div>
+     <div class="empty" id="taEmpty" hidden></div>
+   </div>
   </main>
 
 <script>
 const DATA = /*DATA*/;
 const CUTS = /*CUTS*/;
 const META = /*META*/;
+// Display tidy-up: fix names entered all-lowercase or ALL-CAPS; leave proper mixed-case (McKay, DeShawn) untouched.
+function tidyName(s){ return String(s).replace(/[^\s\-']+/g, w => (w===w.toLowerCase()||w===w.toUpperCase()) ? w.charAt(0).toUpperCase()+w.slice(1).toLowerCase() : w); }
+DATA.forEach(r=>{ r.nm = tidyName(r.nm); });
 const $=s=>document.querySelector(s);
 const WAVE='<svg viewBox="0 0 28 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 7 Q5 1 9 7 T17 7 T27 5" stroke="#7FD3F2" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
 
@@ -242,15 +354,15 @@ function syncOnly(){
   $('#onlyWrap').classList.toggle('disabled',!has);
   $('#onlyLabel').textContent = has ? ('Only '+teamName(state.team)) : 'Selected team only';
   const lw=$('#legWave');
-  if(has){ lw.querySelector('.lt').textContent = teamName(state.team)+' swimmer'; lw.style.display=''; }
+  if(has){ lw.querySelector('.lt').textContent = teamName(state.team); lw.style.display=''; }
   else { lw.style.display='none'; }
 }
-document.getElementById('disclaimer').innerHTML = PROV
-  ? '<b>Heads up:</b> the cut line in each event is the <b>'+YR+'</b> All-Star qualifying time, shown for reference only. '+
-    'The current-season cut times have not been released yet and may be faster or slower — being above the '+YR+' line is not a guarantee of qualification.'
-  : '<b>Note:</b> the cut line in each event is the official <b>'+YR+'</b> All-Star qualifying standard. Times above the line meet the standard for that event.';
-document.getElementById('legCut').textContent = YR+' All-Star cut line';
-document.getElementById('legQual').textContent = 'at or above the '+YR+' cut';
+const _disc=document.getElementById('disclaimer');
+if(PROV){ _disc.innerHTML='<b>Heads up:</b> the cut line in each event is the <b>'+YR+'</b> All-Star qualifying time, shown for reference only. '+
+    'The current-season cut times have not been released yet and may be faster or slower — being above the '+YR+' line is not a guarantee of qualification.'; _disc.style.display=''; }
+else { _disc.innerHTML=''; _disc.style.display='none'; }
+document.getElementById('legCut').textContent = YR+' All-Star Cut';
+document.getElementById('legQual').textContent = 'Qualifier';
 
 const GMERGE={'7-8':'7-8 / 8 & Under','8 & Under':'7-8 / 8 & Under','9-10':'9-10 / 10 & Under','10 & Under':'9-10 / 10 & Under'};
 const groupOf=br=>GMERGE[br]||br;
@@ -286,9 +398,9 @@ function render(){
   const qualN=cut?field.filter(r=>r.h<=cut.h).length:null;
   const chips=$('#chips'); chips.innerHTML='';
   const mk=(cls,html)=>{const d=document.createElement('div');d.className='chip '+cls;d.innerHTML=html;chips.appendChild(d);};
-  mk('','<b>'+field.length+'</b>&nbsp;swimmers');
+  mk('','<b>'+field.length+'</b>&nbsp;swimmer'+(field.length===1?'':'s'));
   if(team) mk('wave','<i class="dot wave"></i><b>'+teamN+'</b>&nbsp;'+team);
-  if(cut) mk('qual','<b>'+qualN+'</b>&nbsp;at/above '+YR+' cut');
+  if(cut) mk('qual','<b>'+qualN+'</b>&nbsp;All-Star time'+(qualN===1?'':'s'));
   if(cut) mk('cut','<i class="dot cut"></i>'+YR+' cut&nbsp;<b>'+cut.t+'</b>');
 
   const tb=$('#rows'); tb.innerHTML=''; const empty=$('#empty');
@@ -305,10 +417,9 @@ function render(){
   const rope=()=>{
     const tr=document.createElement('tr'); tr.className='cutrow';
     const td=document.createElement('td'); td.colSpan=7;
-    const note=PROV?('times above this line met the '+YR+' standard · current cut TBD')
-                   :('times above this line meet the '+YR+' All-Star standard');
+    const note=PROV?('times above this line met the '+YR+' standard · current cut TBD'):'';
     td.innerHTML='<div class="rope"><span class="tag">'+YR+' All-Star Cut</span><span class="t">'+cut.t+
-      '</span><span class="note">'+note+'</span></div>';
+      '</span>'+(note?'<span class="note">'+note+'</span>':'')+'</div>';
     tr.appendChild(td); tb.appendChild(tr);
   };
 
@@ -342,7 +453,125 @@ $('#event').addEventListener('change',e=>{state.st=e.target.value; render();});
 $('#team').addEventListener('change',e=>{state.team=e.target.value; syncOnly(); render();});
 $('#waveOnly').addEventListener('change',e=>{state.waveOnly=e.target.checked; render();});
 
-fillTeam(); syncOnly(); fillAge(); fillEvent(); render();
+// ===== Swimmer view (Feature 1) =====
+const STROKE_RANK={}; META.stroke_order.forEach((s,i)=>STROKE_RANK[s]=i);
+const SWIMMERS=(()=>{
+  const m=new Map();
+  DATA.forEach(r=>{ const k=r.nm+'|'+r.ab; let e=m.get(k);
+    if(!e){e={nm:r.nm,ab:r.ab,tm:dispTeam(r),a:r.a,agl:r.agl,evs:[]};m.set(k,e);}
+    e.evs.push(r); if(r.a>e.a)e.a=r.a; });
+  const arr=[...m.values()];
+  arr.forEach(e=>e.evs.sort((x,y)=>(STROKE_RANK[x.st]-STROKE_RANK[y.st])||(x.d-y.d)));
+  arr.sort((a,b)=>a.nm.localeCompare(b.nm));
+  return arr;
+})();
+const LABELS=(()=>{
+  const cnt={}; SWIMMERS.forEach(e=>{const l=e.nm+' \u2014 '+e.tm; cnt[l]=(cnt[l]||0)+1;});
+  const map=new Map();
+  SWIMMERS.forEach(e=>{let l=e.nm+' \u2014 '+e.tm; if(cnt[l]>1)l+=' (age '+e.a+')'; e.label=l; map.set(l.toLowerCase(),e);});
+  return map;
+})();
+function renderSwimmer(e){
+  const head=$('#swimHead'), tb=$('#swimRows'), board=$('#swimBoard');
+  if(!e){ head.innerHTML='<div class="prompt">Start typing a name above to see all of a swimmer\u2019s events.</div>';
+    tb.innerHTML=''; board.hidden=true; return; }
+  board.hidden=false; let q=0;
+  tb.innerHTML=e.evs.map(r=>{
+    const cut=CUTS[r.sex+'|'+r.br+'|'+r.st]||null;
+    const isq=cut&&r.h<=cut.h; if(isq)q++;
+    let vs='\u2014';
+    if(cut) vs= isq ? '<span class="vs q">\u2713 qual</span>'
+                    : '<span class="vs n">+'+((r.h-cut.h)/100).toFixed(2)+'</span>';
+    return '<tr'+(isq?' class="qualified"':'')+'>'+
+      '<td><b>'+r.d+' '+r.st+'</b></td>'+
+      '<td class="ctr col-rank"><span class="rank">'+r.pl+'</span></td>'+
+      '<td class="num time">'+r.t+'</td>'+
+      '<td class="num cuttime">'+(cut?cut.t:'\u2014')+'</td>'+
+      '<td class="ctr">'+vs+'</td>'+
+      '<td class="col-meet team">'+r.mt+' \u00b7 '+r.dt+'</td></tr>';
+  }).join('');
+  head.innerHTML='<h3 class="nm">'+e.nm+'</h3>'+
+    '<div class="sub">'+e.tm+' \u00b7 '+e.agl+' \u00b7 age '+e.a+'</div>'+
+    '<div class="chips"><span class="chip"><b>'+e.evs.length+'</b>&nbsp;event'+(e.evs.length===1?'':'s')+'</span>'+
+    (q?'<span class="chip"><b>'+q+'</b>&nbsp;All-Star time'+(q===1?'':'s')+'</span>':'')+'</div>';
+}
+function ageGroup(a){ return a<=6?'6&U':a<=8?'7-8':a<=10?'9-10':a<=12?'11-12':a<=14?'13-14':'15-18'; }
+const AGEORDER={'6&U':0,'7-8':1,'9-10':2,'11-12':3,'13-14':4,'15-18':5};
+function renderTeamAllStars(){
+  const head=$('#taHead'), board=$('#taBoard'), tb=$('#taRows'), empty=$('#taEmpty');
+  const team=state.taTeam;
+  if(!team){ head.innerHTML='<div class="prompt">Choose a team above to see its '+YR+' All-Star qualifiers.</div>';
+    tb.innerHTML=''; board.hidden=true; empty.hidden=true; return; }
+  const tn=teamName(team);
+  const quals=DATA.filter(r=>{ if(r.ab!==team) return false; const c=CUTS[r.sex+'|'+r.br+'|'+r.st]; return c&&r.h<=c.h; });
+  const m=new Map();
+  quals.forEach(r=>{const k=r.nm+'|'+r.a; let g=m.get(k); if(!g){g={nm:r.nm,a:r.a,evs:[]};m.set(k,g);} g.evs.push(r);});
+  const groups=[...m.values()];
+  groups.forEach(g=>g.evs.sort((x,y)=>(STROKE_RANK[x.st]-STROKE_RANK[y.st])||(x.d-y.d)));
+  const lastNm=s=>s.trim().split(/\s+/).slice(-1)[0]||s;
+  const so=state.taSort||'first';
+  if(so==='last') groups.sort((a,b)=>lastNm(a.nm).localeCompare(lastNm(b.nm))||a.nm.localeCompare(b.nm));
+  else if(so==='age') groups.sort((a,b)=>(AGEORDER[ageGroup(a.a)]-AGEORDER[ageGroup(b.a)])||a.nm.localeCompare(b.nm));
+  else groups.sort((a,b)=>a.nm.localeCompare(b.nm));
+  head.innerHTML='<h3 class="nm">'+tn+'</h3><div class="sub">'+YR+' All-Star qualifiers</div>'+
+    (groups.length?'<div class="chips"><span class="chip"><b>'+groups.length+'</b>&nbsp;swimmer'+(groups.length===1?'':'s')+'</span><span class="chip"><b>'+quals.length+'</b>&nbsp;All-Star time'+(quals.length===1?'':'s')+'</span></div>':'');
+  if(groups.length===0){ board.hidden=true; tb.innerHTML='';
+    empty.hidden=false; empty.textContent='No '+tn+' swimmers have an All-Star time yet.'; return; }
+  empty.hidden=true; board.hidden=false;
+  let rows='';
+  groups.forEach(g=>{
+    rows+='<tr class="grouphdr"><td colspan="3"><span class="gn">'+g.nm+'</span><span class="ga">'+ageGroup(g.a)+'</span><span class="gc">'+g.evs.length+(g.evs.length===1?' All-Star time':' All-Star times')+'</span></td></tr>';
+    g.evs.forEach(r=>{
+      rows+='<tr class="qualified"><td><b>'+r.d+' '+r.st+'</b></td>'+
+        '<td class="ctr"><span class="rank">'+r.pl+'</span></td>'+
+        '<td class="num time">'+r.t+'</td></tr>';
+    });
+  });
+  tb.innerHTML=rows;
+}
+function fillTaTeam(){
+  const sel=$('#taTeam'); sel.innerHTML='';
+  const ph=document.createElement('option'); ph.value=''; ph.textContent='Choose a team\u2026'; sel.appendChild(ph);
+  TEAMS.forEach(t=>{const o=document.createElement('option');o.value=t.ab;o.textContent=t.nm;sel.appendChild(o);});
+  sel.value=state.taTeam;
+}
+const MODES={rank:['#rankConsole','#rankView'], swim:['#swimConsole','#swimView'], team:['#teamConsole','#teamView']};
+function setMode(mode){
+  state.mode=mode;
+  [...$('#tabs').children].forEach(b=>b.setAttribute('aria-selected', b.dataset.mode===mode));
+  for(const k in MODES){ const on=k===mode; $(MODES[k][0]).hidden=!on; $(MODES[k][1]).hidden=!on; }
+  if(mode==='swim'){ if(!state._swimReady){state._swimReady=true; renderSwimmer(null);} $('#swimSearch').focus(); }
+  if(mode==='team'){ if(!state._taReady){state._taReady=true; renderTeamAllStars();} }
+}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('.tab'); if(b)setMode(b.dataset.mode);});
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function acHide(){ const a=$('#swimAC'); a.hidden=true; a.innerHTML=''; $('#swimSearch').setAttribute('aria-expanded','false'); }
+function acShow(q){
+  const a=$('#swimAC'); const query=q.trim().toLowerCase();
+  if(!query){ acHide(); return; }
+  const matches=SWIMMERS.filter(e=>e.nm.toLowerCase().includes(query)||e.tm.toLowerCase().includes(query)).slice(0,12);
+  a._m=matches; a.hidden=false; $('#swimSearch').setAttribute('aria-expanded','true');
+  a.innerHTML = matches.length
+    ? matches.map((e,i)=>'<div class="opt" role="option" data-i="'+i+'"><span class="nm">'+esc(e.nm)+'</span><span class="tm">'+esc(e.tm)+' \u00b7 age '+e.a+'</span></div>').join('')
+    : '<div class="none">No swimmer found</div>';
+}
+function acPick(e){ if(!e)return; acHide(); $('#swimSearch').value=e.nm; renderSwimmer(e); }
+$('#swimSearch').addEventListener('input',e=>acShow(e.target.value));
+$('#swimSearch').addEventListener('focus',e=>{ if(e.target.value.trim()) acShow(e.target.value); });
+$('#swimSearch').addEventListener('keydown',e=>{ const a=$('#swimAC');
+  if(e.key==='Enter'){ if(a._m&&a._m.length){ e.preventDefault(); acPick(a._m[0]); } }
+  else if(e.key==='Escape'){ acHide(); } });
+$('#swimSearch').addEventListener('blur',()=>setTimeout(acHide,150));
+$('#swimAC').addEventListener('mousedown',e=>{ const o=e.target.closest('.opt'); if(!o)return; e.preventDefault();
+  const a=$('#swimAC'); acPick(a._m&&a._m[+o.dataset.i]); });
+$('#taTeam').addEventListener('change',e=>{state.taTeam=e.target.value; renderTeamAllStars();});
+$('#taSort').addEventListener('change',e=>{state.taSort=e.target.value; renderTeamAllStars();});
+
+state.taTeam=(urlTeam||META.default_team||''); state.taSort='last';
+fillTeam(); syncOnly(); fillAge(); fillEvent(); render(); fillTaTeam();
+(function(){const v=new URLSearchParams(location.search).get('view');
+  const map={swimmer:'swim',swim:'swim',team:'team','team-all-stars':'team',allstars:'team',qualifiers:'team'};
+  setMode(map[v]||'rank');})();
 </script>
 </body>
 </html>
