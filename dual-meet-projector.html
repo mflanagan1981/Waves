@@ -65,8 +65,8 @@ select:focus-visible{outline:3px solid var(--aqua-soft);border-color:var(--aqua)
 .verdict{text-align:center;font-family:var(--serif);font-size:15px;color:var(--ink);padding:12px 18px 2px}
 
 /* tabs */
-.tabs{display:flex;gap:6px;margin:22px 0 4px;border-bottom:2px solid var(--line)}
-.tab{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--muted);background:none;border:none;padding:11px 14px;cursor:pointer;position:relative}
+.tabs{display:flex;gap:8px;margin:22px 0 4px;border-bottom:2px solid var(--line)}
+.tab{font-family:var(--sans);font-size:17px;font-weight:700;color:var(--muted);background:none;border:none;padding:14px 20px;cursor:pointer;position:relative}
 .tab[aria-selected="true"]{color:var(--ink)}
 .tab[aria-selected="true"]::after{content:"";position:absolute;left:8px;right:8px;bottom:-2px;height:3px;background:var(--aqua);border-radius:3px}
 .tab:focus-visible{outline:3px solid var(--aqua-soft);border-radius:8px}
@@ -118,14 +118,27 @@ select:focus-visible{outline:3px solid var(--aqua-soft);border-color:var(--aqua)
 .emar.a{color:var(--aqua-d)} .emar.b{color:var(--amber)} .emar.tie{color:var(--muted)}
 
 /* lineups */
-.lineups{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.lineups{margin-top:14px}
+.linecols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lagrp .abody .linecols{gap:10px 14px;padding-top:8px}
+.lbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:6px 0 14px}
+.lgrp{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:600}
+.lsg{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
+.lsg.on{background:var(--aqua-d);color:#fff;border-color:var(--aqua-d)}
+.lsg:hover:not(.on){border-color:var(--aqua)}
+.lcolh{font-family:var(--sans);font-weight:800;font-size:11px;letter-spacing:.04em;margin:0 0 7px}
+.lcolh.a{color:var(--aqua-d)} .lcolh.b{color:var(--amber)}
+.lcolh .cnt{color:var(--muted);font-weight:600}
 .lcol h3{font-family:var(--serif);font-size:17px;margin:0 0 4px}
 .lcol.a h3{color:var(--aqua-d)} .lcol.b h3{color:var(--amber)}
 .lcol .sub{font-size:12px;color:var(--muted);margin-bottom:10px}
 .lsw{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:7px;cursor:pointer;transition:opacity .15s}
 .lsw:hover{border-color:var(--aqua)} .lsw.out{opacity:.4;background:#f4f6f8}
-.lsw .top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
-.lsw .nm{font-weight:600;font-size:13.5px} .lsw .age{font-size:11px;color:var(--muted)}
+.lsw .top{display:flex;align-items:baseline;gap:6px}
+.lsw .nm{font-weight:600;font-size:13.5px;flex:1;min-width:0} .lsw .age{font-size:11px;color:var(--muted)}
+.lsw .pp{font-family:var(--mono);font-size:11.5px;font-weight:700;white-space:nowrap;color:var(--aqua-d)}
+.lsw .pp.b{color:var(--amber)}
+.lsw .pp i{font-style:normal;font-weight:600;font-size:9.5px;color:var(--muted);margin-left:4px}
 .lsw .evs{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
 .lsw .ec{font-size:11px;background:var(--aqua-soft);color:var(--ink2);border-radius:5px;padding:1px 6px;font-weight:600}
 .lcol.b .lsw .ec{background:var(--amber-soft)}
@@ -650,6 +663,11 @@ function applyRelays(){
     const leg=rr.type==='medley'?l.bk:(rr.type==='mixed'?l.bk:'');
     (ra[l.uid]=ra[l.uid]||[]).push({short:rr.short,leg,type:rr.type,squad:f.squad}); }); }); });
   R.relayAssign=ra;
+  // points attributed to each swimmer: full individual placement points + 1/4 of each relay's points per leg
+  const pmap={}; const addPts=(uid,k,v)=>{ if(!uid||/^PH_/.test(uid))return; (pmap[uid]=pmap[uid]||{ind:0,rel:0})[k]+=v; };
+  R.events.forEach(ev=> ev.rows.forEach(r=> addPts(r.uid,'ind',r.pts||0)));
+  relays.forEach(rr=> rr.field.forEach(f=>{ if(!f.pts)return; f.rel.legs.forEach(l=>{ if(l.ph||!l.uid)return; addPts(l.uid,'rel',f.pts/4); }); }));
+  R.pts=pmap;
 }
 
 // ---------- rendering ----------
@@ -660,7 +678,8 @@ function fillTeams(){
     el.value=def;
   });
 }
-let R=null, curTab="line";
+let R=null, curTab="line", lineView="name", lineSort="pts";
+const lineOpen=new Set();   // which age groups are expanded in the lineup age-group view
 function run(){
   const A=$("#teamA").value, B=$("#teamB").value;
   if(A===B){ $("#board").innerHTML=`<div class="foot">Pick two different teams.</div>`; $("#verdict").textContent=""; $("#swings").innerHTML=""; $("#breakdown").innerHTML=""; return; }
@@ -846,29 +865,92 @@ function renderLineups(){
   if(scratched.size){ sb.innerHTML=`<b>${scratched.size}</b> scratched — individual entries <i>and</i> relays re-optimized around the absence.<button id="resetScr">reset</button>`;
     $("#resetScr").onclick=()=>{scratched=new Set();run();}; }
   else sb.innerHTML=`Click a swimmer to scratch them (absence, illness). The whole projection re-optimizes — their individual events are reassigned to teammates and they drop out of every relay, with the next-fastest swimmer stepping in.`;
-  const RA=R.relayAssign||{};
+  const RA=R.relayAssign||{}, PT=R.pts||{};
   const relChip=r=>`<span class="rc">${r.short}${r.squad?' B':''}${(r.type==='medley'&&r.leg)?' · '+r.leg:(r.type==='mixed'&&r.leg?' · '+r.leg:'')}</span>`;
-  const cols=[["A",R.A,R.aAssign],["B",R.B,R.bAssign]].map(([sd,ab,assign])=>{
-    const sw=(byTeam[ab]||[]).filter(s=>(assign.get(s.uid)||[]).length || (RA[s.uid]&&RA[s.uid].length) || scratched.has(s.uid))
-      .sort((p,q)=>p.last.localeCompare(q.last)||p.first.localeCompare(q.first));
-    const cards=sw.map(s=>{
-      const evs=(assign.get(s.uid)||[]);
-      const chips=evs.map(ek=>{const e=s.events.find(x=>x.ek===ek);return `<span class="ec">${elab(e)}</span>`;}).join("");
-      const rls=RA[s.uid]||[];
-      const relHTML=rls.length?`<div class="rels"><span class="rlabel">relays</span>${rls.map(relChip).join("")}</div>`:'';
-      const out=scratched.has(s.uid);
-      const dropped=s.events.filter(e=>!evs.includes(e.ek)).length;
-      const evHTML = evs.length?`<div class="evs">${chips}</div>`:'<div class="strike">relay only — no individual event</div>';
-      return `<div class="lsw ${out?'out':''}" data-uid="${s.uid}">
-        <div class="top"><span class="nm">${s.last}, ${s.first}</span><span class="age">age ${s.age}</span></div>
-        ${out?'<div class="strike">scratched — click to restore</div>':evHTML+relHTML
-          +(dropped&&!out?`<div class="strike">${dropped} other ranked event${dropped>1?'s':''} not entered</div>`:'')}
+  const assignOf=ab=>ab===R.A?R.aAssign:R.bAssign;
+  const fmtPts=n=>{const r=Math.round(n*10)/10;return r%1===0?String(r):r.toFixed(1);};
+  const ptsOf=uid=>{const p=PT[uid]||{ind:0,rel:0};return {ind:p.ind,rel:p.rel,total:p.ind+p.rel};};
+  // swimmers actually in the projection for a team (entered individually, on a relay, or scratched so they can be restored)
+  const entered=ab=>{const assign=assignOf(ab);
+    return (byTeam[ab]||[]).filter(s=>(assign.get(s.uid)||[]).length || (RA[s.uid]&&RA[s.uid].length) || scratched.has(s.uid));};
+  const byName=(p,q)=>p.last.localeCompare(q.last)||p.first.localeCompare(q.first);
+  const byPoints=(p,q)=>ptsOf(q.uid).total-ptsOf(p.uid).total||byName(p,q);
+  function card(s,ab){
+    const assign=assignOf(ab), evs=(assign.get(s.uid)||[]);
+    const chips=evs.map(ek=>{const e=s.events.find(x=>x.ek===ek);return `<span class="ec">${elab(e)}</span>`;}).join("");
+    const rls=RA[s.uid]||[];
+    const relHTML=rls.length?`<div class="rels"><span class="rlabel">relays</span>${rls.map(relChip).join("")}</div>`:'';
+    const out=scratched.has(s.uid);
+    const dropped=s.events.filter(e=>!evs.includes(e.ek)).length;
+    const evHTML = evs.length?`<div class="evs">${chips}</div>`:'<div class="strike">relay only — no individual event</div>';
+    const pp=ptsOf(s.uid);
+    const pill=out?'':`<span class="pp ${ab===R.A?'a':'b'}">${fmtPts(pp.total)} pts${pp.rel>0?`<i>&middot; ${fmtPts(pp.rel)} relay</i>`:''}</span>`;
+    return `<div class="lsw ${out?'out':''}" data-uid="${s.uid}">
+      <div class="top"><span class="nm">${s.last}, ${s.first}</span><span class="age">age ${s.age}</span>${pill}</div>
+      ${out?'<div class="strike">scratched — click to restore</div>':evHTML+relHTML
+        +(dropped?`<div class="strike">${dropped} other ranked event${dropped>1?'s':''} not entered</div>`:'')}
+    </div>`;
+  }
+  function teamCol(ab,sd,list,compact){
+    const cnt=list.filter(s=>!scratched.has(s.uid)).length;
+    const head=compact
+      ? `<div class="lcolh ${sd}">${ab} <span class="cnt">${cnt}</span></div>`
+      : `<h3>${tname(ab)}</h3><div class="sub">${cnt} entered · click to scratch</div>`;
+    return `<div class="lcol ${sd}">${head}${list.map(s=>card(s,ab)).join("")}</div>`;
+  }
+  // ---- control bar ----
+  const eA=entered(R.A), eB=entered(R.B);
+  const activeGroups=[];
+  (DATA.bucketOrder||[]).forEach(bk=>["Girls","Boys"].forEach(g=>{
+    if(eA.some(s=>s.gender===g&&s.bucket===bk)||eB.some(s=>s.gender===g&&s.bucket===bk))
+      activeGroups.push({g,bk,key:g+'|'+bk}); }));
+  const allOpen=lineView==='age' && activeGroups.length>0 && activeGroups.every(gp=>lineOpen.has(gp.key));
+  const seg=(grp,val,cur,lab)=>`<button class="lsg ${cur===val?'on':''}" data-g="${grp}" data-v="${val}">${lab}</button>`;
+  let bar=`<div class="lbar"><span class="lgrp">`
+    +seg('view','name',lineView,'By Last Name')+seg('view','age',lineView,'By Age Group')+`</span>`;
+  if(lineView==='age') bar+=`<span class="lgrp">sort `+seg('sort','az',lineSort,'A–Z')+seg('sort','pts',lineSort,'By Points')+`</span>`
+    +`<button class="bktoggle" id="lineall">${allOpen?'Collapse all':'Expand all'}</button>`;
+  bar+=`</div>`;
+
+  let body;
+  if(lineView==='name'){
+    body=`<div class="linecols">`
+      +teamCol(R.A,'a',eA.slice().sort(byName),false)
+      +teamCol(R.B,'b',eB.slice().sort(byName),false)+`</div>`;
+  } else {
+    const sorter=lineSort==='pts'?byPoints:byName;
+    body=activeGroups.map(({g,bk,key})=>{
+      const la=eA.filter(s=>s.gender===g&&s.bucket===bk).sort(sorter),
+            lb=eB.filter(s=>s.gender===g&&s.bucket===bk).sort(sorter);
+      const open=lineOpen.has(key);
+      const ptA=la.reduce((t,s)=>t+ptsOf(s.uid).total,0), ptB=lb.reduce((t,s)=>t+ptsOf(s.uid).total,0);
+      const aw=ptA>ptB, bw=ptB>ptA;
+      return `<div class="agrp lagrp">
+        <button class="ahead" data-key="${key}" aria-expanded="${open}">
+          <span class="caret">${open?'\u25BC':'\u25B6'}</span>
+          <span class="alabel">${g} &middot; ${bk}</span>
+          <span class="escore"><span class="pt ${aw?'win a':''}">${fmtPts(ptA)}</span><span class="vs">&ndash;</span><span class="pt ${bw?'win b':''}">${fmtPts(ptB)}</span></span>
+        </button>
+        <div class="abody" ${open?'':'hidden'}><div class="linecols">${teamCol(R.A,'a',la,true)}${teamCol(R.B,'b',lb,true)}</div></div>
       </div>`;
     }).join("");
-    return `<div class="lcol ${sd.toLowerCase()}"><h3>${tname(ab)}</h3>
-      <div class="sub">${sw.filter(s=>!scratched.has(s.uid)).length} swimmers entered · click to scratch</div>${cards}</div>`;
-  }).join("");
-  $("#lineups").innerHTML=cols;
+  }
+  $("#lineups").innerHTML=bar+body;
+
+  // control-bar handlers
+  $("#lineups").querySelectorAll(".lsg").forEach(b=>b.onclick=()=>{
+    if(b.dataset.g==='view') lineView=b.dataset.v; else lineSort=b.dataset.v;
+    renderLineups();
+  });
+  const la=$("#lineall");
+  if(la) la.onclick=()=>{ activeGroups.forEach(gp=>allOpen?lineOpen.delete(gp.key):lineOpen.add(gp.key));
+    renderLineups();
+  };
+  // age-group caret toggles
+  $("#lineups").querySelectorAll(".lagrp .ahead").forEach(h=>h.onclick=()=>{
+    const key=h.dataset.key; if(lineOpen.has(key))lineOpen.delete(key); else lineOpen.add(key); renderLineups();
+  });
+  // scratch toggles
   $("#lineups").querySelectorAll(".lsw").forEach(el=>el.onclick=()=>{
     const u=el.dataset.uid; if(scratched.has(u))scratched.delete(u); else scratched.add(u); run();
   });
