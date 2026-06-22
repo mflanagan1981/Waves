@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Willowsford North Waves — 2026 Sponsors</title>
+<style>
+  /* ============================================================
+     Willowsford North Waves — Sponsor Scroller
+     Theme tokens. Tweak these to restyle the whole strip.
+     ============================================================ */
+  :root{
+    --page:        #ffffff;   /* match this to your SwimTopia page background */
+    --ink:         #0b3c5d;   /* deep pool blue, used for the heading        */
+    --aqua:        #2ba8e0;   /* bright accent                                */
+    --muted:       #5a6b7b;
+    --card:        #ffffff;
+    --line:        #e7ecf1;
+    --shadow-rest: 0 1px 2px rgba(11,60,93,.05), 0 6px 18px rgba(11,60,93,.07);
+    --shadow-lift: 0 2px 6px rgba(11,60,93,.10), 0 16px 36px rgba(11,60,93,.16);
+    --gold:        #c9a227;
+    --silver:      #9aa6b2;
+    --bronze:      #b07a4b;
+
+    --gap:         40px;      /* space between logos          */
+    --speed:       50;        /* scroll speed in pixels/second */
+    --logo-gold:   60px;
+    --logo-silver: 50px;
+    --logo-bronze: 44px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; background:transparent; }
+  body{
+    font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .sponsors{ padding:14px 0 20px; }
+
+  /* ---- heading (delete this whole <header> in the HTML if you don't want it) ---- */
+  .sponsors__head{ text-align:center; margin:0 16px 14px; }
+  .sponsors__eyebrow{
+    margin:0; font-size:.82rem; font-weight:600; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink);
+  }
+  .sponsors__rule{
+    width:46px; height:3px; margin:9px auto 0; border-radius:3px;
+    background:var(--aqua);
+  }
+
+  /* ---- the moving strip ---- */
+  .viewport{
+    position:relative; overflow:hidden; width:100%;
+    -webkit-mask-image:none;
+  }
+  /* soft fade at both edges so logos enter/exit gently */
+  .viewport::before,
+  .viewport::after{
+    content:""; position:absolute; top:0; bottom:0; width:72px; z-index:2;
+    pointer-events:none;
+  }
+  .viewport::before{ left:0;  background:linear-gradient(90deg, var(--page), rgba(255,255,255,0)); }
+  .viewport::after{  right:0; background:linear-gradient(270deg, var(--page), rgba(255,255,255,0)); }
+
+  .track{
+    display:flex; width:max-content; gap:var(--gap);
+    animation:marquee linear infinite;
+    will-change:transform;
+  }
+  .track.is-paused{ animation-play-state:paused; }
+
+  @keyframes marquee{
+    from{ transform:translateX(0); }
+    to  { transform:translateX(calc(-1 * var(--shift, 50%))); }
+  }
+
+  .group{ display:flex; gap:var(--gap); align-items:center; }
+
+  /* ---- a single logo tile ---- */
+  .card{
+    position:relative; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    height:92px; max-width:240px; padding:16px 24px;
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    box-shadow:var(--shadow-rest);
+    text-decoration:none; color:inherit;
+    transition:transform .22s ease, box-shadow .22s ease;
+    outline:none;
+  }
+  .card::after{ /* tier accent bar */
+    content:""; position:absolute; left:14px; right:14px; bottom:7px; height:3px;
+    border-radius:3px; background:var(--line);
+  }
+  .card.tier-gold::after  { background:var(--gold);   }
+  .card.tier-silver::after{ background:var(--silver); }
+  .card.tier-bronze::after{ background:var(--bronze); }
+
+  .card img{ display:block; width:auto; max-width:100%; object-fit:contain; }
+  .card.tier-gold   img{ max-height:var(--logo-gold);   }
+  .card.tier-silver img{ max-height:var(--logo-silver); }
+  .card.tier-bronze img{ max-height:var(--logo-bronze); }
+
+  /* text fallback if a logo file is missing */
+  .card .fallback{
+    font-weight:700; font-size:.95rem; color:var(--ink); text-align:center;
+    line-height:1.2;
+  }
+
+  /* "Visit" affordance — appears on desktop hover and on the selected card (mobile) */
+  .visit{
+    position:absolute; bottom:-11px; left:50%; transform:translate(-50%,4px);
+    background:var(--ink); color:#fff; font-size:.66rem; font-weight:600;
+    letter-spacing:.04em; padding:3px 9px; border-radius:999px; white-space:nowrap;
+    opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    box-shadow:0 4px 10px rgba(11,60,93,.25);
+  }
+
+  /* desktop interactions (only where a real mouse is present) */
+  @media (hover:hover) and (pointer:fine){
+    .card:hover,
+    .card:focus-visible{ transform:translateY(-4px); box-shadow:var(--shadow-lift); }
+    .card:hover .visit,
+    .card:focus-visible .visit{ opacity:1; transform:translate(-50%,0); }
+  }
+
+  /* selected state (mobile, first tap) */
+  .card.is-selected{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-lift);
+    border-color:var(--aqua);
+  }
+  .card.is-selected .visit{ opacity:1; transform:translate(-50%,0); }
+
+  .card:focus-visible{ box-shadow:0 0 0 3px rgba(43,168,224,.55), var(--shadow-lift); }
+
+  @media (max-width:640px){
+    :root{
+      --gap:22px;
+      --logo-gold:46px; --logo-silver:40px; --logo-bronze:36px;
+    }
+    .card{ height:74px; padding:11px 16px; max-width:180px; border-radius:13px; }
+    .viewport::before,.viewport::after{ width:40px; }
+    .sponsors__eyebrow{ font-size:.72rem; }
+  }
+
+  /* respect reduced-motion: stop the auto-scroll, let people swipe instead */
+  @media (prefers-reduced-motion:reduce){
+    .track{ animation:none; }
+    .viewport{ overflow-x:auto; scrollbar-width:none; }
+    .viewport::-webkit-scrollbar{ display:none; }
+    .group[aria-hidden="true"]{ display:none; }
+  }
+</style>
+</head>
+<body>
+  <section class="sponsors" aria-label="Our 2026 sponsors">
+    <!-- Heading: delete this <header> block if you want logos only -->
+    <header class="sponsors__head">
+      <p class="sponsors__eyebrow">Thank you to our 2026 sponsors</p>
+      <div class="sponsors__rule" aria-hidden="true"></div>
+    </header>
+
+    <div class="viewport" id="viewport">
+      <div class="track" id="track"></div>
+    </div>
+  </section>
+
+<script>
+/* ============================================================
+   DATA
+   The strip reads from sponsors.csv (same folder) so you can
+   update sponsors without touching this file. If the CSV can't
+   be loaded, it falls back to the built-in list below so the
+   strip is never empty.
+   CSV columns used: Sponsor, Tier, Logo, Website, Social
+   Link rule: use Website if present, otherwise Social.
+   ============================================================ */
+  const FALLBACK = [
+    // ---- Gold ----
+    ["Blue Sky Landscaping","gold","blue-sky-landscaping.png","https://www.blue-skylandscaping.com"],
+    ["Bounce Party NOVA","gold","bounce-party-nova.jpg","https://bouncepartynova.com/"],
+    ["Concentric Private Wealth","gold","concentric-private-wealth.png","https://concentricpw.com"],
+    ["Dreams Contractors","gold","dreams-contractors.png","http://dreamscontractors.com/"],
+    ["Little Smiles Pediatric Dentistry","gold","little-smiles.png","https://www.littlesmilesashburn.com"],
+    ["Motiv8 Consulting","gold","motiv8-consulting.png","https://motiv8consulting.com/"],
+    ["Pediatric Housecalls","gold","pediatric-housecalls.png","https://pedshousecalls.com/about/"],
+    ["Piano Home Group","gold","piano-home-group.png","https://www.thepianohomegroup.com"],
+    ["PM Pediatric Urgent Care","gold","pm-pediatric-urgent-care.png","https://pmpediatriccare.com/"],
+    // ---- Silver ----
+    ["Accommodation Home Services","silver","accommodation-home-services.png","https://www.accommodationshs.com/"],
+    ["Bateman Aquatics","silver","bateman-aquatics.jpg","https://www.gomotionapp.com/team/recvaba/page/about"],
+    ["Jennifer Porter Law","silver","jennifer-porter-law.png","https://jenniferporterlaw.com/"],
+    ["Nations Capital Swim Club","silver","nations-capital-swim-club.png","https://www.ncapswim.com/"],
+    ["Primrose School @ Moorefield Station","silver","primrose-moorefield-station.jpg","https://www.primroseschools.com/schools/moorefield-station"],
+    ["Salvetti Law Group","silver","salvetti-law-group.png","https://www.salvettilaw.com"],
+    ["Steampunk","silver","steampunk.png","https://www.instagram.com/steampunkinc/?hl=en"],
+    // ---- Bronze ----
+    ["Alvarado Custom Carpentry","bronze","alvarado-custom-carpentry.jpg","https://alvaradocustomcarpentry.com"],
+    ["American Kolache","bronze","american-kolache.png","https://www.facebook.com/p/American-Kolache-Ashburn-61582923328416/"],
+    ["Chick-Fil-A @ Ryan Park","bronze","chick-fil-a-ryan-park.jpg","https://www.chick-fil-a.com/locations/va/ryan-park"],
+    ["Hair Story by Serap","bronze","hair-story-by-serap.png","https://www.hairstorybyserap.com/"],
+    ["Hounds Town","bronze","hounds-town.png","https://houndstownusa.com/"],
+    ["Metro Design Build Group","bronze","metro-design-build.png","https://metrodesignbuildgroup.com/"],
+  ].map(([name,tier,logo,url]) => ({name,tier,logo,url}));
+
+  const TIER_ORDER = { gold:0, silver:1, bronze:2 };
+
+  /* ---------- tiny CSV parser (handles quoted fields & commas) ---------- */
+  function parseCSV(text){
+    const rows=[]; let row=[], field="", q=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(q){
+        if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+        else field+=c;
+      }else{
+        if(c==='"') q=true;
+        else if(c===',') { row.push(field); field=""; }
+        else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=""; }
+        else if(c==='\r'){ /* ignore */ }
+        else field+=c;
+      }
+    }
+    if(field.length||row.length){ row.push(field); rows.push(row); }
+    return rows.filter(r => r.length>1 || (r.length===1 && r[0].trim()!==""));
+  }
+
+  function fromCSV(text){
+    const rows=parseCSV(text);
+    if(!rows.length) return null;
+    const head=rows[0].map(h=>h.trim().toLowerCase());
+    const ix=n=>head.indexOf(n);
+    const iName=ix("sponsor"), iTier=ix("tier"), iLogo=ix("logo"),
+          iWeb=ix("website"), iSoc=ix("social");
+    if(iName<0||iLogo<0) return null;
+    const out=[];
+    for(let r=1;r<rows.length;r++){
+      const c=rows[r]; if(!c[iName]) continue;
+      const name=c[iName].trim();
+      const tier=(iTier>=0?c[iTier]:"").trim().toLowerCase()||"bronze";
+      const logo=(c[iLogo]||"").trim();
+      const url=((iWeb>=0?c[iWeb]:"")||"").trim() || ((iSoc>=0?c[iSoc]:"")||"").trim();
+      if(!name) continue;
+      out.push({name,tier,logo,url});
+    }
+    return out.length?out:null;
+  }
+
+  /* ---------- build the DOM ---------- */
+  const track = document.getElementById('track');
+  const viewport = document.getElementById('viewport');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  const SPEED = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--speed')) || 50;
+
+  function makeCard(s, clone){
+    const a=document.createElement('a');
+    a.className='card tier-'+(['gold','silver','bronze'].includes(s.tier)?s.tier:'bronze');
+    a.href=s.url||'#';
+    a.target='_blank';
+    a.rel='noopener noreferrer';
+    a.setAttribute('aria-label','Visit '+s.name+' (opens in a new tab)');
+    if(clone){ a.setAttribute('aria-hidden','true'); a.tabIndex=-1; }
+
+    if(s.logo){
+      const img=document.createElement('img');
+      img.src='logos/'+s.logo;
+      img.alt=s.name;
+      img.loading='lazy';
+      img.decoding='async';
+      img.onerror=()=>{ img.remove(); const f=document.createElement('span'); f.className='fallback'; f.textContent=s.name; a.insertBefore(f,a.firstChild); };
+      a.appendChild(img);
+    }else{
+      const f=document.createElement('span'); f.className='fallback'; f.textContent=s.name; a.appendChild(f);
+    }
+    const v=document.createElement('span'); v.className='visit'; v.textContent='Visit \u2197';
+    a.appendChild(v);
+    return a;
+  }
+
+  function buildGroup(data, clone){
+    const g=document.createElement('div');
+    g.className='group';
+    if(clone) g.setAttribute('aria-hidden','true');
+    data.forEach(s=>g.appendChild(makeCard(s,clone)));
+    return g;
+  }
+
+  let group1, group2;
+  function render(data){
+    data.sort((a,b)=>(TIER_ORDER[a.tier]??9)-(TIER_ORDER[b.tier]??9));
+    track.innerHTML='';
+    group1=buildGroup(data,false);
+    group2=buildGroup(data,true);   // duplicate for the seamless loop
+    track.appendChild(group1);
+    track.appendChild(group2);
+    measure();
+    wireInteractions();
+  }
+
+  /* ---------- seamless-loop math + consistent speed ---------- */
+  function measure(){
+    if(!group1||!group2) return;
+    const shift = group2.offsetLeft - group1.offsetLeft;  // = one group width + one gap
+    if(shift>0){
+      track.style.setProperty('--shift', shift+'px');
+      track.style.animationDuration = (shift / SPEED) + 's';
+    }
+  }
+  let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(measure,150); });
+  window.addEventListener('load', measure);
+
+  /* ---------- pause / resume ---------- */
+  function pause(){ track.classList.add('is-paused'); }
+  function resume(){ if(!selected) track.classList.remove('is-paused'); }
+
+  /* ---------- interactions ---------- */
+  let selected=null, resumeTimer=null;
+  function clearSelection(){
+    if(selected){ selected.classList.remove('is-selected'); selected=null; }
+    clearTimeout(resumeTimer);
+    track.classList.remove('is-paused');
+  }
+  function selectCard(card){
+    if(selected) selected.classList.remove('is-selected');
+    selected=card; card.classList.add('is-selected'); pause();
+    clearTimeout(resumeTimer);
+    resumeTimer=setTimeout(clearSelection, 5000); // auto-resume after 5s
+  }
+
+  function wireInteractions(){
+    // Desktop: hovering the strip pauses everything; click opens normally.
+    if(!coarse && !reduceMotion){
+      viewport.addEventListener('pointerenter',pause);
+      viewport.addEventListener('pointerleave',resume);
+    }
+    // Keyboard: pause while a logo is focused.
+    viewport.addEventListener('focusin',pause);
+    viewport.addEventListener('focusout',()=>{ if(!viewport.matches(':hover')) resume(); });
+
+    // Touch: first tap stops + reveals "Visit"; second tap on the same logo opens it.
+    if(coarse && !reduceMotion){
+      track.addEventListener('click',(e)=>{
+        const card=e.target.closest('.card'); if(!card) return;
+        if(selected===card){ clearSelection(); return; }   // 2nd tap → let the link open
+        e.preventDefault();                                 // 1st tap → just stop & select
+        selectCard(card);
+      });
+      document.addEventListener('pointerdown',(e)=>{
+        if(selected && !e.target.closest('.card')) clearSelection();
+      },{passive:true});
+    }
+  }
+
+  /* ---------- boot ---------- */
+  fetch('sponsors.csv',{cache:'no-store'})
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
+    .then(t=>{ const d=fromCSV(t); render(d&&d.length?d:FALLBACK); })
+    .catch(()=> render(FALLBACK));
+</script>
+</body>
+</html>
