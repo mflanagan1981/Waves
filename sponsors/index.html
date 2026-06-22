@@ -32,30 +32,12 @@
   *{ box-sizing:border-box; }
   html,body{ margin:0; background:transparent; }
   body{
-    font-family:"Proxima Nova","Myriad Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-family:"Proxima Nova","Myriad Pro",sans-serif;
     color:var(--ink);
     -webkit-font-smoothing:antialiased;
   }
 
-  .sponsors{ padding:14px 0 20px; }
-
-  /* ---- heading: a dark-blue pill that matches the site social bar ----
-     (delete this whole <header> block in the HTML if you ever want logos only) */
-  .sponsors__head{ margin:0 0 16px; }
-  .sponsors__eyebrow{
-    display:block;
-    margin:0;
-    background-color:var(--ink);
-    color:#ffffff;
-    font-family:"Proxima Nova","Myriad Pro",-apple-system,BlinkMacSystemFont,sans-serif;
-    font-size:17.28px;
-    font-weight:normal;
-    letter-spacing:normal;
-    text-align:center;
-    text-transform:none;
-    padding:10px 18px;
-    border-radius:5px;
-  }
+  .sponsors{ padding:0 0 18px; }
 
   /* ---- the moving strip ---- */
   .viewport{
@@ -149,7 +131,6 @@
     }
     .card{ height:74px; padding:11px 16px; max-width:180px; border-radius:13px; }
     .viewport::before,.viewport::after{ width:40px; }
-    .sponsors__eyebrow{ font-size:15px; padding:7px 14px; }
   }
 
   /* respect reduced-motion: stop the auto-scroll, let people swipe instead */
@@ -163,11 +144,6 @@
 </head>
 <body>
   <section class="sponsors" aria-label="Our 2026 sponsors">
-    <!-- Heading: delete this <header> block if you want logos only -->
-    <header class="sponsors__head">
-      <p class="sponsors__eyebrow">Thank you to our 2026 sponsors</p>
-    </header>
-
     <div class="viewport" id="viewport">
       <div class="track" id="track"></div>
     </div>
