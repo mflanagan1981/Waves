@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Willowsford North Waves — 2026 Sponsors</title>
+<style>
+  :root{
+    --navy:#0a3d5e; --navy-deep:#082c43; --aqua:#2ba8e0; --ink:#0a3d5e; --muted:#5a6b7b;
+    --card:#fff; --line:#e6edf3; --gold:#c9a227; --silver:#9aa6b2; --bronze:#b07a4b;
+    --shadow-rest:0 1px 2px rgba(10,44,67,.06), 0 8px 22px rgba(10,44,67,.08);
+    --shadow-lift:0 4px 10px rgba(10,44,67,.12), 0 20px 44px rgba(10,44,67,.18);
+    --font:"Proxima Nova","Myriad Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; color:var(--ink); font-family:var(--font); -webkit-font-smoothing:antialiased;
+    background:linear-gradient(180deg,#e8f2fa 0,#f6fafd 260px,#fff 600px); min-height:100vh; }
+
+  .head{ text-align:center; padding:34px 18px 6px; }
+  .head img{ height:64px; width:auto; }
+  .head h1{ margin:12px 0 4px; font-size:28px; font-weight:600; color:var(--navy); }
+  .head p{ margin:0; color:var(--muted); font-size:15px; }
+
+  .wrap{ max-width:1080px; margin:0 auto; padding:8px 18px 56px; }
+  .tier__label{ display:flex; align-items:center; gap:12px; margin:34px 4px 18px; }
+  .tier__label i{ width:18px; height:18px; border-radius:5px; display:block; }
+  .tier__label span{ font-size:14px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--navy); }
+  .tier__label::after{ content:""; flex:1; height:2px; background:var(--line); border-radius:2px; }
+  .s-gold i{ background:var(--gold); } .s-silver i{ background:var(--silver); } .s-bronze i{ background:var(--bronze); }
+
+  .grid{ display:grid; gap:18px; align-items:start; }
+  .g-gold  { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
+  .g-silver{ grid-template-columns:repeat(auto-fill,minmax(186px,1fr)); }
+  .g-bronze{ grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); }
+
+  .card{ position:relative; background:var(--card); border:1px solid var(--line); border-radius:16px;
+    box-shadow:var(--shadow-rest); cursor:pointer; outline:none; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .card::before{ content:""; position:absolute; top:0; left:16px; right:16px; height:3px; border-radius:0 0 3px 3px; background:var(--line); }
+  .s-gold .card::before{ background:var(--gold); } .s-silver .card::before{ background:var(--silver); } .s-bronze .card::before{ background:var(--bronze); }
+  .card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lift); }
+  .card:focus-visible{ box-shadow:0 0 0 3px rgba(43,168,224,.5), var(--shadow-lift); }
+  .card.is-open{ box-shadow:var(--shadow-lift); }
+  .s-gold .card.is-open{ border-color:var(--gold); } .s-silver .card.is-open{ border-color:var(--silver); } .s-bronze .card.is-open{ border-color:var(--bronze); }
+
+  .front{ display:flex; flex-direction:column; align-items:center; gap:12px; padding:22px 18px 18px; width:100%; }
+  .logo{ display:flex; align-items:center; justify-content:center; width:100%; }
+  .logo img{ max-width:100%; width:auto; object-fit:contain; display:block; }
+  .g-gold .logo,  .g-gold .logo img  { height:84px; max-height:84px; }
+  .g-silver .logo,.g-silver .logo img{ height:62px; max-height:62px; }
+  .g-bronze .logo,.g-bronze .logo img{ height:50px; max-height:50px; }
+  .name{ font-size:14px; font-weight:600; color:var(--navy); text-align:center; line-height:1.25; }
+  .g-bronze .name{ font-size:13px; }
+
+  .panel{ width:100%; max-height:0; overflow:hidden; transition:max-height .34s ease; }
+  .card.is-open .panel{ max-height:240px; }
+  .panel__inner{ border-top:1px solid var(--line); padding:8px 16px 16px; }
+  .rows{ display:flex; flex-direction:column; gap:2px; }
+  .row{ display:flex; align-items:center; gap:10px; padding:9px 4px; color:var(--ink); text-decoration:none; font-size:13.5px; border-radius:8px; }
+  .row:hover{ background:rgba(10,61,94,.06); }
+  .row svg{ width:17px; height:17px; flex:0 0 auto; color:var(--aqua); }
+  .row .val{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  @media (max-width:600px){
+    .g-gold,.g-silver,.g-bronze{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+    .head h1{ font-size:23px; }
+  }
+</style>
+</head>
+<body>
+  <header class="head">
+    <img src="https://mflanagan1981.github.io/Waves/Waves_Logo.png" alt="Willowsford North Waves" onerror="this.style.display='none'">
+    <h1>Our 2026 Sponsors</h1>
+    <p>Thank you for supporting the Waves. Tap for contact info.</p>
+  </header>
+  <main class="wrap" id="wrap"></main>
+
+<script>
+const SPONSORS=[{"name":"Blue Sky Landscaping LLC","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/blue-sky-landscaping.png","web":"https://www.blue-skylandscaping.com","phone":"(703) 957-3105","email":"office@blue-skylandscaping.com","social":""},{"name":"Bounce Party NOVA","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/bounce-party-nova.jpg","web":"https://bouncepartynova.com/","phone":"","email":"","social":""},{"name":"Concentric Private Wealth","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/concentric-private-wealth.png","web":"https://concentricpw.com","phone":"(703) 891-9966","email":"katherine.liola@gmail.com","social":""},{"name":"Dreams Contractors","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/dreams-contractors.png","web":"http://dreamscontractors.com/","phone":"","email":"","social":""},{"name":"Little Smiles Pediatric Dentistry","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/little-smiles.png","web":"https://www.littlesmilesashburn.com","phone":"(703) 687-1581","email":"","social":""},{"name":"Motiv8 Consulting","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/motiv8-consulting.png","web":"https://motiv8consulting.com/","phone":"","email":"","social":""},{"name":"Pediatric Housecalls","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/pediatric-housecalls.png","web":"https://pedshousecalls.com/about/","phone":"","email":"sdumond@pedshousecalls.com","social":""},{"name":"Piano Home Group","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/piano-home-group.png","web":"https://www.thepianohomegroup.com","phone":"","email":"patricia@thepianohomegroup.com","social":""},{"name":"PM Pediatric Urgent Care","tier":"gold","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/pm-pediatric-urgent-care.png","web":"https://pmpediatriccare.com/","phone":"","email":"","social":""},{"name":"Accommodation Home Services","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/accommodation-home-services.png","web":"https://www.accommodationshs.com/","phone":"","email":"","social":""},{"name":"Bateman Aquatics","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/bateman-aquatics.jpg","web":"https://www.gomotionapp.com/team/recvaba/page/about","phone":"","email":"","social":""},{"name":"Jennifer Porter Law","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/jennifer-porter-law.png","web":"https://jenniferporterlaw.com/","phone":"","email":"","social":""},{"name":"Nations Capital Swim Club","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/nations-capital-swim-club.png","web":"https://www.ncapswim.com/","phone":"","email":"","social":""},{"name":"Primrose School @ Moorefield Station","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/primrose-moorefield-station.jpg","web":"https://www.primroseschools.com/schools/moorefield-station","phone":"","email":"","social":""},{"name":"Salvetti Law Group","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/salvetti-law-group.png","web":"https://www.salvettilaw.com","phone":"","email":"","social":""},{"name":"Steampunk","tier":"silver","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/steampunk.png","web":"","phone":"","email":"","social":"https://www.instagram.com/steampunkinc/?hl=en"},{"name":"Alvarado Custom Carpentry","tier":"bronze","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/alvarado-custom-carpentry.jpg","web":"https://alvaradocustomcarpentry.com","phone":"","email":"","social":""},{"name":"American Kolache","tier":"bronze","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/american-kolache.png","web":"","phone":"","email":"","social":"https://www.facebook.com/p/American-Kolache-Ashburn-61582923328416/"},{"name":"Chick-Fil-A @ Ryan Park","tier":"bronze","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/chick-fil-a-ryan-park.jpg","web":"https://www.chick-fil-a.com/locations/va/ryan-park","phone":"","email":"","social":""},{"name":"Hair Story by Serap","tier":"bronze","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/hair-story-by-serap.png","web":"https://www.hairstorybyserap.com/","phone":"","email":"","social":""},{"name":"Hounds Town","tier":"bronze","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/hounds-town.png","web":"https://houndstownusa.com/","phone":"","email":"","social":""},{"name":"Metro Design Build Group","tier":"bronze","logo":"https://mflanagan1981.github.io/Waves/sponsors/logos/metro-design-build.png","web":"https://metrodesignbuildgroup.com/","phone":"","email":"","social":""}];
+  const ICON={
+    globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>',
+    phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h3l2 5-2 1c1 2 3 4 5 5l1-2 5 2v3c0 1-1 2-2 2C10 23 1 14 1 6c0-1 1-2 2-2"/></svg>',
+    mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'
+  };
+  const TIERS=[["gold","Gold Sponsors"],["silver","Silver Sponsors"],["bronze","Bronze Sponsors"]];
+  const short=u=>u.replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/$/,'');
+  function rowsHTML(s){
+    let h=""; const link=s.web||s.social;
+    if(link) h+=`<a class="row" href="${link}" target="_blank" rel="noopener">${ICON.globe}<span class="val">${short(link)}</span></a>`;
+    if(s.phone) h+=`<a class="row" href="tel:${s.phone.replace(/[^0-9]/g,'')}">${ICON.phone}<span class="val">${s.phone}</span></a>`;
+    if(s.email) h+=`<a class="row" href="mailto:${s.email}">${ICON.mail}<span class="val">${s.email}</span></a>`;
+    return h;
+  }
+  const wrap=document.getElementById('wrap');
+  wrap.innerHTML=TIERS.map(([tier,label])=>{
+    const list=SPONSORS.filter(s=>s.tier===tier);
+    if(!list.length) return "";
+    const cards=list.map(s=>`<div class="card" tabindex="0" role="button" aria-expanded="false">
+      <div class="front"><div class="logo"><img src="${s.logo}" alt="${s.name}"></div><div class="name">${s.name}</div></div>
+      <div class="panel"><div class="panel__inner"><div class="rows">${rowsHTML(s)}</div></div></div>
+    </div>`).join("");
+    return `<section class="s-${tier}"><div class="tier__label"><i></i><span>${label}</span></div>
+      <div class="grid g-${tier}">${cards}</div></section>`;
+  }).join("");
+
+  let activeCard=null;
+  function setOpen(card,open){ card.classList.toggle('is-open',open); card.setAttribute('aria-expanded',open?'true':'false'); }
+  function onActivate(card){
+    if(card===activeCard){ setOpen(card,false); activeCard=null; return; }
+    if(activeCard) setOpen(activeCard,false);
+    setOpen(card,true); activeCard=card;
+  }
+  wrap.addEventListener('click',e=>{ if(e.target.closest('a')) return; const c=e.target.closest('.card'); if(c) onActivate(c); });
+  wrap.addEventListener('keydown',e=>{ const c=e.target.closest('.card'); if(!c) return;
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onActivate(c); } });
+</script>
+</body>
+</html>
