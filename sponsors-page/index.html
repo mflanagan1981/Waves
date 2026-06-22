@@ -105,6 +105,11 @@ const SPONSORS=[{"name":"Blue Sky Landscaping LLC","tier":"gold","logo":"data:im
   wrap.addEventListener('click',e=>{ if(e.target.closest('a')) return; const c=e.target.closest('.card'); if(c) onActivate(c); });
   wrap.addEventListener('keydown',e=>{ const c=e.target.closest('.card'); if(!c) return;
     if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onActivate(c); } });
+  // report height to a parent page when embedded, so the iframe can size to fit
+  function wnwPostHeight(){ try{ parent.postMessage({wnwHeight:document.documentElement.scrollHeight},'*'); }catch(e){} }
+  window.addEventListener('load',wnwPostHeight);
+  window.addEventListener('resize',wnwPostHeight);
+  if(window.ResizeObserver){ new ResizeObserver(wnwPostHeight).observe(document.body); }
 </script>
 </body>
 </html>
