@@ -45,7 +45,7 @@
   .tgt{display:flex;align-items:center;gap:12px;min-width:300px;flex:1}
   .tgt label{font-weight:700;color:var(--navy);font-size:14px;white-space:nowrap}
   .tgt input[type=range]{flex:1;accent-color:var(--red);min-width:120px}
-  .tgt .val{font-size:26px;font-weight:800;color:var(--navy);width:40px;text-align:center}
+  .tgt .val{font-size:17px;font-weight:800;color:var(--navy);min-width:86px;text-align:center;white-space:nowrap}
   .bench{flex-basis:100%;order:9;border-top:1px solid var(--line);margin-top:4px;padding-top:10px;
          display:flex;flex-direction:column;gap:4px;font-size:13px}
   .bench .brow{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;color:var(--muted)}
@@ -71,6 +71,10 @@
   .sortbar{display:flex;gap:10px;align-items:center;margin:4px 2px 8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
   .fsep{width:1px;height:22px;background:var(--line)}
   #showing{font-weight:700}
+  #scTbl, #pickupTbl, #yoyTbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @media (max-width:780px){
+    .exec table, details.meth table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  }
   ul.factors{margin:8px 0 6px 22px;padding:0}
   .factors li{margin:7px 0;line-height:1.6}
   th.ref, td.ref{color:var(--muted);font-weight:400}
@@ -78,10 +82,10 @@
   select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
 
   table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  thead th{background:var(--navy);color:#fff;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;
+  thead th{background:var(--navy);color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.35px;line-height:1.35;
            padding:9px 8px;text-align:left;font-weight:700;white-space:nowrap}
   thead th.r{text-align:right} thead th.c{text-align:center}
-  tbody td{padding:8px;border-top:1px solid var(--line);vertical-align:middle;font-size:13.5px}
+  tbody td{padding:7px 9px;border-top:1px solid var(--line);vertical-align:middle;font-size:13.5px}
   tbody tr.changed{background:#fffbe9}
   td.ev{font-weight:600;white-space:nowrap}
   td.ev .num{color:var(--muted);font-weight:600;font-size:11.5px;margin-right:2px}
@@ -90,8 +94,12 @@
   .caret.open{transform:rotate(90deg)}
   td.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   td.c{text-align:center}
-  td.slider{min-width:140px}
-  td.slider input[type=range]{width:100%;accent-color:var(--blue)}
+  td.propcell{width:128px}
+  .rowslider{margin-top:4px}
+  .rowslider input[type=range]{width:110px;accent-color:var(--blue);height:14px}
+  .qpair{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .qpair .arr{color:var(--muted);font-size:12px;padding:0 2px}
+  .rowbtns{margin-top:5px;display:flex;gap:6px;justify-content:center}
   input.cutbox{width:74px;font:inherit;font-size:13.5px;text-align:right;padding:4px 5px;
                border:1px solid var(--line);border-radius:6px;font-variant-numeric:tabular-nums}
   input.cutbox.changed{border-color:#d9a800;background:#fffbe9;font-weight:700}
@@ -149,8 +157,10 @@
   details.meth summary{cursor:pointer;font-weight:700;color:var(--navy);padding:10px 0;font-size:14px}
   details.meth .body{padding:2px 0 14px;font-size:13.5px;color:var(--ink)}
   details.meth p{margin:8px 0}
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy);color:#fff;
-         padding:10px 18px;border-radius:8px;font-size:13.5px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none}
+  .toast{position:fixed;left:0;right:0;bottom:26px;margin:0 auto;width:max-content;max-width:92vw;
+         background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:700;
+         box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:40;text-align:center;
+         opacity:0;transition:opacity .25s;pointer-events:none}
   .toast.show{opacity:1}
 
   @media (max-width:780px){
@@ -263,14 +273,11 @@
   <table id="tbl">
     <thead><tr>
       <th>Event</th>
-      <th class="r">Adopted cut</th>
-      <th class="c">Adjust cut</th>
-      <th class="r">Proposed cut</th>
-      <th class="r">Qualified Today</th>
-      <th class="r">Qualified After Divisionals</th>
-      <th class="r">Projected All-Star Entries</th>
-      <th class="c">Suggested Action</th>
-      <th class="c"></th>
+      <th class="r">Adopted<br>cut</th>
+      <th class="r">Proposed<br>cut</th>
+      <th class="r">Qualified<br>today &rarr; after div.</th>
+      <th class="r">Projected<br>entries</th>
+      <th class="c">Suggested<br>action</th>
     </tr></thead>
     <tbody id="tbody"></tbody>
   </table>
@@ -576,7 +583,7 @@ function render(){
   document.getElementById("showing").textContent =
     shown.length === EV.length ? "" : `Showing ${shown.length} of ${EV.length}`;
   if (!shown.length)
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:26px;color:var(--muted)">No events match the current filters.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:26px;color:var(--muted)">No events match the current filters.</td></tr>`;
   for (const i of shown){
     const e = EV[i], r = res[i], changed = Math.abs(state.cuts[i]-e.cut) > 0.004;
     const [cls, txt] = status(r.proj, state.target);
@@ -597,20 +604,19 @@ function render(){
       `<td class="ev"><button class="caret${open?" open":""}" data-act="tgl" data-i="${i}" title="Show qualified swimmers">&#9656;</button>` +
       `<span class="num">#${e.n}</span> ${e.label}</td>` +
       `<td class="r" data-l="Adopted cut">${fmt(e.cut)}</td>` +
-      `<td class="slider"><input type="range" min="${lo}" max="${hi}" step="0.01" value="${state.cuts[i]}" data-i="${i}"></td>` +
-      `<td class="r" data-l="Proposed cut"><input class="cutbox${changed?" changed":""}" value="${fmt(state.cuts[i])}" data-i="${i}">` +
+      `<td class="r propcell" data-l="Proposed cut"><input class="cutbox${changed?" changed":""}" value="${fmt(state.cuts[i])}" data-i="${i}">` +
+      `<div class="rowslider"><input type="range" min="${lo}" max="${hi}" step="0.01" value="${state.cuts[i]}" data-i="${i}"></div>` +
       `${SUGNOTE[i] ? '<div class="cutnote">'+SUGNOTE[i]+'</div>' : ""}</td>` +
-      `<td class="r" data-l="Qualified Today">${r.cens ? e.depth + "+" : r.nNow}</td>` +
-      `<td class="r" data-l="Qualified After Divisionals">${ge}${Math.round(r.projQ)}</td>` +
-      `<td class="r proj" data-l="Projected All-Star Entries" title="${ttl}" style="color:${cls==="short"?"var(--red)":cls==="ok"?"var(--green)":"var(--blue)"}">${ge}${Math.round(r.proj)}</td>` +
-      `<td class="c" data-l="Suggested Action"><span class="act ${acls}">${atxt}</span></td>` +
-      `<td class="c"><button class="mini" data-act="sug" data-i="${i}">Suggest</button> ` +
-      `<button class="mini" data-act="rst" data-i="${i}" ${changed?"":"disabled"}>Reset</button></td>`;
+      `<td class="r" data-l="Qualified today &rarr; after divisionals"><span class="qpair">${r.cens ? e.depth + "+" : r.nNow} <span class="arr">&rarr;</span> ${ge}${Math.round(r.projQ)}</span></td>` +
+      `<td class="r proj" data-l="Projected entries" title="${ttl}" style="color:${cls==="short"?"var(--red)":cls==="ok"?"var(--green)":"var(--blue)"}">${ge}${Math.round(r.proj)}</td>` +
+      `<td class="c" data-l="Suggested action"><span class="act ${acls}">${atxt}</span>` +
+      `<div class="rowbtns"><button class="mini" data-act="sug" data-i="${i}">Suggest</button>` +
+      `<button class="mini" data-act="rst" data-i="${i}" ${changed?"":"disabled"}>Reset</button></div></td>`;
     tbody.appendChild(tr);
     if (open){
       const dr = document.createElement("tr");
       dr.className = "detail";
-      dr.innerHTML = `<td colspan="9">${detailHTML(i)}</td>`;
+      dr.innerHTML = `<td colspan="6">${detailHTML(i)}</td>`;
       tbody.appendChild(dr);
     }
   }
