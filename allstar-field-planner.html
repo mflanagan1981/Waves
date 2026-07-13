@@ -94,6 +94,11 @@
   .caret.open{transform:rotate(90deg)}
   td.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   td.c{text-align:center}
+  td.ev{cursor:pointer}
+  td.ev:hover .hint{color:var(--blue);border-color:var(--blue)}
+  .hint{display:inline-block;font-size:10px;font-weight:700;color:var(--muted);border:1px solid var(--line);
+        border-radius:10px;padding:1px 8px;margin:4px 0 0 24px;white-space:nowrap;letter-spacing:.3px;
+        text-transform:uppercase}
   td.propcell{width:128px}
   .rowslider{margin-top:4px}
   .rowslider input[type=range]{width:110px;accent-color:var(--blue);height:14px}
@@ -212,7 +217,7 @@
     <p>New All-Star qualifiers by team under each minimum, versus no change. Counts are unique swimmers gaining a qualification; a small share will not attend, per the attendance factor above.</p>
     <div id="pickupTbl"><p class="tblnote">Computing&hellip;</p></div>
 
-    <div class="keyline"><b>How ODSL should use this:</b> the standard is a minimum of <b>18 entered swimmers per event</b> &mdash; 16 is only the scoring depth (16 individuals can score), and a 16-swimmer field leaves zero cushion for a single scratch. Move the <b>Minimum field size</b> slider: at &ldquo;No change&rdquo; the table shows the adopted cuts as they stand (judged against the 18 standard); at 16 through 24 the whole league is solved fresh from the adopted cuts at that minimum &mdash; only events below it are raised, each by the smallest loosening that reaches it, most by about a second. Moving the slider re-solves from scratch, so scenarios can be compared in any order. Sort by Least Projected Entries or use the age, gender, and stroke filters to inspect any slice. Per-event &ldquo;Suggest&rdquo; buttons remain for fine-tuning a single event at the current minimum; when clustered times make an exact landing impossible, the row says why. Expand any event (&#9656;) to see its qualifiers by name &mdash; including who is projected to swim other events instead &mdash; and the divisionals bubble: named swimmers currently above the cut but within reach of crossing at divisionals. The impact panel below the table totals what the proposal gains &mdash; new All-Star swimmers league-wide, by age and gender, and by team &mdash; and what it costs in added meet time. &ldquo;Copy proposed cuts&rdquo; exports the result for the board packet. Large fields (25 or more entries &mdash; a fifth heat) cannot be reduced mid-season and are shown for awareness only.</div>
+    <div class="keyline"><b>How ODSL should use this:</b> the standard is a minimum of <b>18 entered swimmers per event</b> &mdash; 16 is only the scoring depth (16 individuals can score), and a 16-swimmer field leaves zero cushion for a single scratch. Move the <b>Minimum field size</b> slider: at &ldquo;No change&rdquo; the table shows the adopted cuts as they stand (judged against the 18 standard); at 16 through 24 the whole league is solved fresh from the adopted cuts at that minimum &mdash; only events below it are raised, each by the smallest loosening that reaches it, most by about a second. Moving the slider re-solves from scratch, so scenarios can be compared in any order. Sort by Least Projected Entries or use the age, gender, and stroke filters to inspect any slice. Per-event &ldquo;Suggest&rdquo; buttons remain for fine-tuning a single event at the current minimum; when clustered times make an exact landing impossible, the row says why. Click any event name to open its detail: its qualifiers by name &mdash; including who is projected to swim other events instead &mdash; and the divisionals bubble: named swimmers currently above the cut but within reach of crossing at divisionals. The impact panel below the table totals what the proposal gains &mdash; new All-Star swimmers league-wide, by age and gender, and by team &mdash; and what it costs in added meet time. &ldquo;Copy proposed cuts&rdquo; exports the result for the board packet. Large fields (25 or more entries &mdash; a fifth heat) cannot be reduced mid-season and are shown for awareness only.</div>
     <a class="jump" href="#planner">Open the planner &darr;</a>
   </section>
 
@@ -601,8 +606,9 @@ function render(){
     const tr = document.createElement("tr");
     if (changed) tr.className = "changed";
     tr.innerHTML =
-      `<td class="ev"><button class="caret${open?" open":""}" data-act="tgl" data-i="${i}" title="Show qualified swimmers">&#9656;</button>` +
-      `<span class="num">#${e.n}</span> ${e.label}</td>` +
+      `<td class="ev" data-i="${i}" title="${open ? "Hide" : "Show"} qualified swimmers"><button class="caret${open?" open":""}" data-act="tgl" data-i="${i}">&#9656;</button>` +
+      `<span class="num">#${e.n}</span> ${e.label}` +
+      `<div class="hint">${open ? "click to hide detail" : "click for detail"}</div></td>` +
       `<td class="r" data-l="Adopted cut">${fmt(e.cut)}</td>` +
       `<td class="r propcell" data-l="Proposed cut"><input class="cutbox${changed?" changed":""}" value="${fmt(state.cuts[i])}" data-i="${i}">` +
       `<div class="rowslider"><input type="range" min="${lo}" max="${hi}" step="0.01" value="${state.cuts[i]}" data-i="${i}"></div>` +
@@ -734,7 +740,16 @@ tbody.addEventListener("change", ev => {
   }
 });
 tbody.addEventListener("click", ev => {
-  const b = ev.target.closest("button"); if (!b) return;
+  const b = ev.target.closest("button");
+  if (!b){
+    const cell = ev.target.closest("td.ev");
+    if (cell){
+      const i = +cell.dataset.i;
+      expanded.has(i) ? expanded.delete(i) : expanded.add(i);
+      render();
+    }
+    return;
+  }
   const i = +b.dataset.i;
   if (b.dataset.act === "tgl"){ expanded.has(i) ? expanded.delete(i) : expanded.add(i); render(); }
   if (b.dataset.act === "rst"){ state.cuts[i] = EV[i].cut; delete SUGNOTE[i]; render(); }
