@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ODSL All-Star Field Size Planner — 2026</title>
+<style>
+  :root{
+    --navy:#1a2566; --red:#c8102e; --blue:#2f63b8;
+    --ink:#1c2333; --muted:#5c6478; --line:#dfe3ee; --bg:#f5f6fa; --card:#ffffff;
+    --green:#1e7f4f; --green-bg:#e7f5ee; --red-bg:#fbeaec; --blue-bg:#eaf1fb; --gray-bg:#eef0f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);font-size:15px;line-height:1.4}
+  header{background:var(--navy);color:#fff;padding:18px 22px;border-bottom:4px solid var(--red)}
+  header h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.2px}
+  header p{margin:5px 0 0;font-size:13.5px;color:#cdd3ec}
+  .wrap{max-width:1180px;margin:0 auto;padding:16px 14px 40px}
+
+  .exec{background:var(--card);border:1px solid var(--line);border-radius:10px;
+        padding:22px 26px;margin:16px 0 22px}
+  .exec .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--red);font-weight:800;margin:0 0 4px}
+  .exec h2{margin:0 0 10px;font-size:19px;color:var(--navy);line-height:1.3}
+  .exec h3{margin:18px 0 6px;font-size:14px;color:var(--navy);text-transform:uppercase;letter-spacing:.5px}
+  .exec h3 .stepnum{display:inline-block;background:var(--navy);color:#fff;border-radius:50%;
+        width:20px;height:20px;line-height:20px;text-align:center;font-size:11.5px;margin-right:7px}
+  .exec p{margin:7px 0;font-size:14px;line-height:1.55}
+  .exec .lede{font-size:15px}
+  .exec table{width:auto;min-width:0;border-radius:8px;margin:10px 0 4px}
+  .exec thead th{padding:7px 14px;font-size:11px}
+  .exec tbody td{padding:6px 14px;font-size:13px}
+  .exec td.r, .exec th.r{text-align:right;font-variant-numeric:tabular-nums}
+  .exec .tblnote{font-size:12px;color:var(--muted);margin:2px 0 0}
+  .exec .keyline{border-left:4px solid var(--red);background:var(--red-bg);
+        padding:10px 14px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+  .jump{display:inline-block;margin-top:12px;font-size:13.5px;font-weight:700;color:var(--blue);text-decoration:none}
+  .jump:hover{text-decoration:underline}
+  .planner-rule{display:flex;align-items:center;gap:12px;margin:26px 0 4px}
+  .planner-rule h2{margin:0;font-size:17px;color:var(--navy)}
+  .planner-rule .line{flex:1;height:3px;background:linear-gradient(90deg,var(--navy),var(--red))}
+
+  .controls{background:var(--card);border:1px solid var(--line);border-radius:10px;
+            padding:14px 16px;margin:14px 0;display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+  .tgt{display:flex;align-items:center;gap:12px;min-width:300px;flex:1}
+  .tgt label{font-weight:700;color:var(--navy);font-size:14px;white-space:nowrap}
+  .tgt input[type=range]{flex:1;accent-color:var(--red);min-width:120px}
+  .tgt .val{font-size:26px;font-weight:800;color:var(--navy);width:40px;text-align:center}
+  .bench{flex-basis:100%;order:9;border-top:1px solid var(--line);margin-top:4px;padding-top:10px;
+         display:flex;flex-direction:column;gap:4px;font-size:13px}
+  .bench .brow{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;color:var(--muted)}
+  .bench .blbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:800;
+               color:var(--muted);min-width:170px}
+  .bench .bv{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .bench .brow.now{color:var(--ink)}
+  .bench .brow.now .blbl{color:var(--red)}
+  .bench .brow.now .bv{font-weight:800;color:var(--navy)}
+  .counts{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:4px 10px;border-radius:20px;font-size:12.5px;font-weight:700}
+  .chip.short{background:var(--red-bg);color:var(--red)}
+  .chip.ok{background:var(--green-bg);color:var(--green)}
+  .chip.deep{background:var(--blue-bg);color:var(--blue)}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  button{font:inherit;font-size:13px;font-weight:700;border-radius:7px;padding:8px 13px;
+         cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--navy)}
+  button.primary{background:var(--red);border-color:var(--red);color:#fff}
+  button.primary:hover{background:#a80d26}
+  button:hover{background:#f0f2f8}
+  button.mini{padding:3px 9px;font-size:12px;font-weight:600}
+
+  .sortbar{display:flex;gap:10px;align-items:center;margin:4px 2px 8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .fsep{width:1px;height:22px;background:var(--line)}
+  #showing{font-weight:700}
+  ul.factors{margin:8px 0 6px 22px;padding:0}
+  .factors li{margin:7px 0;line-height:1.6}
+  th.ref, td.ref{color:var(--muted);font-weight:400}
+  tr.tot td{border-top:2px solid var(--navy);font-weight:800}
+  select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  thead th{background:var(--navy);color:#fff;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;
+           padding:9px 8px;text-align:left;font-weight:700;white-space:nowrap}
+  thead th.r{text-align:right} thead th.c{text-align:center}
+  tbody td{padding:8px;border-top:1px solid var(--line);vertical-align:middle;font-size:13.5px}
+  tbody tr.changed{background:#fffbe9}
+  td.ev{font-weight:600;white-space:nowrap}
+  td.ev .num{color:var(--muted);font-weight:600;font-size:11.5px;margin-right:2px}
+  .caret{border:none;background:none;padding:2px 6px 2px 0;cursor:pointer;font-size:12px;color:var(--blue);
+         display:inline-block;transition:transform .15s;transform:rotate(0deg)}
+  .caret.open{transform:rotate(90deg)}
+  td.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.c{text-align:center}
+  td.slider{min-width:140px}
+  td.slider input[type=range]{width:100%;accent-color:var(--blue)}
+  input.cutbox{width:74px;font:inherit;font-size:13.5px;text-align:right;padding:4px 5px;
+               border:1px solid var(--line);border-radius:6px;font-variant-numeric:tabular-nums}
+  input.cutbox.changed{border-color:#d9a800;background:#fffbe9;font-weight:700}
+  .act{display:inline-block;white-space:nowrap;padding:3px 10px;border-radius:14px;
+       font-size:11.5px;font-weight:700;color:var(--muted);background:#f1f2f6}
+  .act.raise{color:#fff;background:var(--red)}
+  .act.done{color:#fff;background:var(--green)}
+  .cutnote{font-size:10.5px;color:#8a6d00;background:#fff6d8;border-radius:6px;padding:2px 6px;
+           margin-top:3px;max-width:160px;line-height:1.35;display:inline-block;text-align:left}
+  .delta.pos{color:var(--red);font-weight:700}
+  td.proj{font-weight:800;font-size:16px}
+  .status{display:inline-block;white-space:nowrap;text-align:center;padding:3px 10px;border-radius:14px;
+          font-size:11.5px;font-weight:800;letter-spacing:.2px}
+  .status.short{background:var(--red-bg);color:var(--red)}
+  .status.ok{background:var(--green-bg);color:var(--green)}
+  .status.deep{background:var(--blue-bg);color:var(--blue)}
+
+  tr.detail>td{background:#f2f4fb;border-top:1px dashed var(--line);padding:12px 14px 14px}
+  .dsum{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink);margin-bottom:9px}
+  .dsum b{color:var(--navy)}
+  .dsum .dpt{white-space:nowrap}
+  .dhead{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;font-weight:800;color:#b45309;margin:10px 0 2px}
+  .dnote{font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  .drow.bub .tm{color:#b45309}
+  .drow.bub .gap{font-size:11.5px;color:#b45309;white-space:nowrap}
+  .dlist{max-height:330px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+  .drow{display:flex;gap:10px;align-items:baseline;padding:3px 2px;font-size:13px;border-top:1px solid #f0f2f8}
+  .drow:first-child{border-top:none}
+  .drow .pos{color:var(--muted);width:26px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+  .drow .nm{font-weight:600;min-width:150px}
+  .drow .meta{color:var(--muted);font-size:12px;min-width:86px}
+  .drow .tm{font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+  .drow.struck .nm,.drow.struck .tm,.drow.struck .pos{text-decoration:line-through;color:#9aa0b4}
+  .drow .why{color:var(--red);font-size:12px;font-weight:600}
+  .drow .newq{color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+
+  .impact{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin:18px 0}
+  .impact h2{margin:0 0 4px;font-size:17px;color:var(--navy)}
+  .impact .sub{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .card{flex:1;min-width:170px;background:var(--gray-bg);border-radius:9px;padding:12px 14px}
+  .card .big{font-size:26px;font-weight:800;color:var(--navy);line-height:1.1}
+  .card .big.pos{color:var(--green)}
+  .card .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-top:3px}
+  .impact .twocol{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .impact .twocol>div{flex:1;min-width:290px}
+  .impact h4{margin:4px 0 6px;font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)}
+  .impact table{width:auto}
+  .impact thead th{padding:6px 12px;font-size:10.5px}
+  .impact tbody td{padding:5px 12px;font-size:12.5px}
+  .impact td.r,.impact th.r{text-align:right;font-variant-numeric:tabular-nums}
+  .impact .note{font-size:11.5px;color:var(--muted);margin-top:10px}
+
+  details.meth{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 16px}
+  details.meth summary{cursor:pointer;font-weight:700;color:var(--navy);padding:10px 0;font-size:14px}
+  details.meth .body{padding:2px 0 14px;font-size:13.5px;color:var(--ink)}
+  details.meth p{margin:8px 0}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy);color:#fff;
+         padding:10px 18px;border-radius:8px;font-size:13.5px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none}
+  .toast.show{opacity:1}
+
+  @media (max-width:780px){
+    #tbl, #tbl thead, #tbl tbody, #tbl tr, #tbl td, #tbl th{display:block}
+    #tbl thead{display:none}
+    #tbl tbody tr{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:10px 12px;background:var(--card)}
+    #tbl tbody td{border:none;padding:3px 0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    #tbl tbody td::before{content:attr(data-l);font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700}
+    #tbl td.ev{display:block;font-size:15px;padding-bottom:6px}
+    #tbl td.ev::before{content:none}
+    #tbl td.slider{display:block}
+    #tbl td.slider::before{content:none}
+    #tbl tr.detail{padding:8px}
+    #tbl tr.detail>td{display:block}
+    #tbl tr.detail>td::before{content:none}
+    .drow .nm{min-width:110px}
+    .drow{flex-wrap:wrap}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ODSL All-Star Field Size Planner</h1>
+  <p>2026 cut-time adjustment model &middot; rankings through the regular season (pre-divisionals) &middot; projections include the divisionals bump, the 3-event limit, and historical attendance</p>
+</header>
+<div class="wrap">
+
+  <section class="exec" id="summary">
+    <p class="eyebrow">Executive summary</p>
+    <h2>The 2026 All-Star meet is on track to be much smaller than recent years, with uneven event fields. The board&rsquo;s decision: select a minimum field size per event.</h2>
+
+    <p class="lede"><b>The issue.</b> At the adopted cut times, 2026 projects about 850 swims from roughly 400 swimmers &mdash; a fifth smaller than 2024 (1,050 swims) and well under 2025 (992) &mdash; and the shrinkage is uneven: <b>34 of 52 events project below an 18-swimmer field</b> (24 below 16, where scoring places start going empty) while 5 events project 25 or more. The fix is mechanical: raise the cut times of the thin events until every event reaches a minimum field size the board selects.</p>
+
+    <h3>Factors considered</h3>
+    <ul class="factors">
+      <li><b>Additional qualifiers at divisionals.</b> Fields grow at divisionals; measured from 2024&ndash;25, growth runs from about 2% for 15-18s to about 14% for 6&nbsp;&amp;&nbsp;Unders, and the 15th&ndash;30th ranked times drop by a measured percentage at each position.</li>
+      <li><b>Swimmers who qualify in 4-5 events.</b> About a quarter of qualifiers exceed the 3-event limit, so raising a cut adds fewer swims than qualifiers; the model assigns each swimmer their 3 highest-ranked events.</li>
+      <li><b>Qualifiers who decline All Stars.</b> A small share skip the meet &mdash; from about 9% of 6&nbsp;&amp;&nbsp;Unders to about 26% of 15-18s across 2024&ndash;25 &mdash; applied as expected attendance.</li>
+      <li><b>Host capacity.</b> All-Star heat sheets seed 6 lanes, so every scenario is expressed in swimmers, swims, heats, and modeled racing time, directly comparable to meets already run.</li>
+      <li><b>Accuracy.</b> Blind-tested against 2025 using only pre-divisionals data: mean error of about 1.75 swimmers per event.</li>
+    </ul>
+
+    <h3>The decision: select a minimum field size</h3>
+    <p>Each column is the full league solved at that minimum &mdash; every event projecting below it has its cut raised until it reaches it; nothing else is touched. All numbers are computed live by the planner&rsquo;s model.</p>
+    <div id="scTbl"><p class="tblnote">Computing scenarios&hellip;</p></div>
+    <p class="tblnote"><b>Modeled racing time</b> is defined as: the sum over all heats of (slowest seed time in the heat + 30 seconds of turnover), at 6 swimmers per heat, matching how ODSL All-Star heat sheets are seeded. It excludes breaks and ceremonies, so read it as a comparison across columns rather than a wall-clock schedule; for scale, the 2023 Stone Ridge meet (938 swims, 158 heats) printed an 8:00&nbsp;AM&ndash;12:50&nbsp;PM timeline including a roughly 40-minute break.</p>
+
+    <h3>What each team picks up</h3>
+    <p>New All-Star qualifiers by team under each minimum, versus no change. Counts are unique swimmers gaining a qualification; a small share will not attend, per the attendance factor above.</p>
+    <div id="pickupTbl"><p class="tblnote">Computing&hellip;</p></div>
+
+    <div class="keyline"><b>How ODSL should use this:</b> the standard is a minimum of <b>18 entered swimmers per event</b> &mdash; 16 is only the scoring depth (16 individuals can score), and a 16-swimmer field leaves zero cushion for a single scratch. Move the <b>Minimum field size</b> slider: at &ldquo;No change&rdquo; the table shows the adopted cuts as they stand (judged against the 18 standard); at 16 through 24 the whole league is solved fresh from the adopted cuts at that minimum &mdash; only events below it are raised, each by the smallest loosening that reaches it, most by about a second. Moving the slider re-solves from scratch, so scenarios can be compared in any order. Sort by Least Projected Entries or use the age, gender, and stroke filters to inspect any slice. Per-event &ldquo;Suggest&rdquo; buttons remain for fine-tuning a single event at the current minimum; when clustered times make an exact landing impossible, the row says why. Expand any event (&#9656;) to see its qualifiers by name &mdash; including who is projected to swim other events instead &mdash; and the divisionals bubble: named swimmers currently above the cut but within reach of crossing at divisionals. The impact panel below the table totals what the proposal gains &mdash; new All-Star swimmers league-wide, by age and gender, and by team &mdash; and what it costs in added meet time. &ldquo;Copy proposed cuts&rdquo; exports the result for the board packet. Large fields (25 or more entries &mdash; a fifth heat) cannot be reduced mid-season and are shown for awareness only.</div>
+    <a class="jump" href="#planner">Open the planner &darr;</a>
+  </section>
+
+  <div class="planner-rule" id="planner"><h2>The planner</h2><div class="line"></div></div>
+
+  <div class="controls">
+    <div class="tgt">
+      <label for="target">Minimum field size</label>
+      <input type="range" id="target" min="15" max="24" step="1" value="15">
+      <div class="val" id="targetVal">No change</div>
+    </div>
+    <div class="counts" id="counts"></div>
+    <div class="btns">
+      <button id="resetAll">Reset</button>
+      <button id="copyBtn">Copy proposed cuts</button>
+    </div>
+    <div class="bench" id="bench"></div>
+  </div>
+
+  <div class="sortbar">
+    Sort by
+    <select id="sortSel">
+      <option value="num">Event Order (default)</option>
+      <option value="proj">Least Projected Entries</option>
+      <option value="projdesc">Most Projected Entries</option>
+    </select>
+    <span class="fsep"></span>
+    Filter
+    <select id="fG">
+      <option value="">All genders</option>
+      <option value="M">Boys / Men</option>
+      <option value="F">Girls / Women</option>
+    </select>
+    <select id="fA">
+      <option value="">All ages</option>
+      <option value="6 &amp; Under">6 &amp; Under</option>
+      <option value="7-8">7-8</option>
+      <option value="8 &amp; Under">8 &amp; Under</option>
+      <option value="9-10">9-10</option>
+      <option value="10 &amp; Under">10 &amp; Under</option>
+      <option value="11-12">11-12</option>
+      <option value="13-14">13-14</option>
+      <option value="15-18">15-18</option>
+    </select>
+    <select id="fS">
+      <option value="">All events</option>
+      <option value="Freestyle">Freestyle</option>
+      <option value="Backstroke">Backstroke</option>
+      <option value="Breaststroke">Breaststroke</option>
+      <option value="Butterfly">Butterfly</option>
+      <option value="Individual Medley">Individual Medley</option>
+    </select>
+    <button class="mini" id="fClr">Clear</button>
+    <span id="showing"></span>
+    <span id="asOf"></span>
+  </div>
+
+  <table id="tbl">
+    <thead><tr>
+      <th>Event</th>
+      <th class="r">Adopted cut</th>
+      <th class="c">Adjust cut</th>
+      <th class="r">Proposed cut</th>
+      <th class="r">Qualified Today</th>
+      <th class="r">Qualified After Divisionals</th>
+      <th class="r">Projected All-Star Entries</th>
+      <th class="c">Suggested Action</th>
+      <th class="c"></th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <section class="impact" id="yoy">
+    <h2>How the meet compares across years</h2>
+    <p class="sub">2023&ndash;2025 are actual heat-sheet counts &mdash; 2023 was the last meet hosted at Stone Ridge, under the old invite format that seeded every event to at least 18. The 2026 columns are this model&rsquo;s projections; its Athletes figure counts ranked qualifiers expected to attend, before divisionals additions. Heats for past years are as printed on the heat sheets; 2026 assumes full 6-lane heats, and actual seeding has historically run about 10% more heats from scratches and seeding gaps. Racing time uses one formula for every year &mdash; 6 swimmers per heat, each heat costing its slowest seed time plus 30 seconds of turnover &mdash; so read it as a comparison, not a schedule. For a real-world anchor, the 2023 printed timeline at Stone Ridge ran 8:00 AM to 12:50 PM, including a roughly 40-minute mid-morning break.</p>
+    <div id="yoyTbl"></div>
+  </section>
+
+  <section class="impact" id="impact">
+    <h2>Impact of the proposed cuts vs Current Cuts</h2>
+    <p class="sub">Everything below compares the proposed cuts against the adopted cuts, live. Swimmer counts are among currently ranked swimmers; divisionals will add more on top.</p>
+    <div class="cards" id="impactCards"></div>
+    <div class="twocol">
+      <div><h4>New All-Star qualifiers by age &amp; gender</h4><div id="impactAge"></div></div>
+      <div><h4>New All-Star qualifiers by team</h4><div id="impactTeam"></div></div>
+    </div>
+    <p class="note">Meet-time model: 6 swimmers per heat &mdash; matching how ODSL All-Star heat sheets are actually seeded (6-lane pools) &mdash; each heat costing its slowest seed time plus 30 seconds of turnover. The estimate covers racing time only and is best read as a difference, not a schedule.</p>
+  </section>
+
+  <details class="meth">
+    <summary>Appendix &mdash; model detail and evidence</summary>
+    <p>The planner projects every event&rsquo;s All-Star field from three ingredients: who has qualified so far, how much fields historically grow at divisionals, and how many qualifiers actually swim at All Stars. Each ingredient is measured from the 2024 and 2025 seasons, not assumed.</p>
+    <h3><span class="stepnum">1</span>The 2026 field of performers</h3>
+    <p>The starting point is the current league rankings (Top 50 per event, all 7 regular-season meets). For any candidate cut time, the tool counts the swimmers already at or under it. This is a hard count, not an estimate.</p>
+
+    <h3><span class="stepnum">2</span>The divisionals bump &mdash; how many qualifiers get added</h3>
+    <p>Divisionals adds qualifiers two ways: ranked swimmers drop time past the cut, and swimmers post a first qualifying swim. We measure the effect two independent ways, comparing the 2024 and 2025 rankings from the week <i>before</i> divisionals against the rankings <i>after</i>.</p>
+    <p><b>First, count growth</b> &mdash; how many swimmers sat under each event&rsquo;s cut before divisionals versus after. It is strongly age-dependent and nearly identical across the two seasons:</p>
+    <table><thead><tr><th>Age group</th><th class="r">2024 growth</th><th class="r">2025 growth</th><th class="r">Pooled</th></tr></thead><tbody>
+      <tr><td>6 &amp; Under</td><td class="r">+12.1%</td><td class="r">+16.7%</td><td class="r"><b>+13.8%</b></td></tr>
+      <tr><td>8 &amp; Under pool (7-8 and 8&amp;U events)</td><td class="r">+11.7%</td><td class="r">+11.7%</td><td class="r"><b>+11.7%</b></td></tr>
+      <tr><td>10 &amp; Under pool (9-10 and 10&amp;U events)</td><td class="r">+5.7%</td><td class="r">+4.0%</td><td class="r"><b>+4.8%</b></td></tr>
+      <tr><td>11-12</td><td class="r">+6.6%</td><td class="r">+8.6%</td><td class="r"><b>+7.5%</b></td></tr>
+      <tr><td>13-14</td><td class="r">+3.5%</td><td class="r">+3.3%</td><td class="r"><b>+3.4%</b></td></tr>
+      <tr><td>15-18</td><td class="r">+2.9%</td><td class="r">+0.0%</td><td class="r"><b>+2.1%</b></td></tr>
+    </tbody></table>
+    <p><b>Second, the ranking-curve drop.</b> Two related currents decide who ends up under a proposed cut: the cut time moves <i>up</i> &mdash; the board&rsquo;s lever, admitting swimmers already ranked just beyond today&rsquo;s line &mdash; and the 15th-through-30th ranked times move <i>down</i> through divisionals, the field&rsquo;s own improvement carrying swimmers under the line. The second current is measured as a <i>percentage improvement of each ranked position</i> (a percentage of the time, so 25m, 50m, and 100m events pool cleanly). The top of every ranking barely moves &mdash; divisionals almost never changes the top 10 &mdash; while the compression lives in the middle of the field, exactly the 15&ndash;30 band where every cut sits, and most for the youngest groups:</p>
+    <table><thead><tr><th>Age group</th><th class="r">15th time drops</th><th class="r">20th time drops</th><th class="r">25th time drops</th><th class="r">30th time drops</th></tr></thead><tbody>
+      <tr><td>6 &amp; Under</td><td class="r">0.58%</td><td class="r">1.01%</td><td class="r">1.64%</td><td class="r">1.64%</td></tr>
+      <tr><td>8 &amp; Under pool</td><td class="r">0.27%</td><td class="r">0.75%</td><td class="r">0.81%</td><td class="r">1.16%</td></tr>
+      <tr><td>10 &amp; Under pool</td><td class="r">0.05%</td><td class="r">0.24%</td><td class="r">0.48%</td><td class="r">0.74%</td></tr>
+      <tr><td>11-12</td><td class="r">0.24%</td><td class="r">0.42%</td><td class="r">0.56%</td><td class="r">0.74%</td></tr>
+      <tr><td>13-14</td><td class="r">0.04%</td><td class="r">0.10%</td><td class="r">0.21%</td><td class="r">0.28%</td></tr>
+      <tr><td>15-18</td><td class="r">0.02%</td><td class="r">0.02%</td><td class="r">0.03%</td><td class="r">0.12%</td></tr>
+    </tbody></table>
+    <p class="tblnote">Share of the Nth-ranked time shaved off through divisionals &mdash; the smoothed rank-by-rank profile the tool applies, measured on 2024&ndash;25, both genders pooled. For intuition: 1% of a 20-second 8&amp;Under swim is about 0.2 seconds; 1% of a 45-second 11-12 breaststroke is about 0.45 seconds. The tool carries the full profile from rank 1 to 50, not just these three points, and applies it multiplicatively to each ranked time.</p>
+
+    <p>These are two views of the same movement &mdash; one counts swimmers crossing a fixed time, the other watches the time at a fixed rank &mdash; and they tell a consistent story: a modest effect league-wide, concentrated in the youngest groups and the deeper ranks. They differ in one behavioral respect: swimmers appear to <i>target</i> the published cuts. Post-divisionals swims pile up disproportionately in the last one percent under the line &mdash; the fullest band anywhere near the cut &mdash; and 42% of the swimmers who crossed at divisionals in 2024&ndash;25 landed within 1% of it. The count view, measured at the line, absorbs that goal-seeking; the curve view is blind to the line by construction and models improvement as if no one knew where it was. The count view is also steadier year to year, while the curve view automatically adapts when a proposed cut sits deeper or shallower than the adopted one. The tool computes the divisionals bump both ways at whatever cut is set and uses the average.</p>
+
+    <h3><span class="stepnum">3</span>Yield &mdash; what fraction of qualifiers actually swim</h3>
+    <p>Qualifying is not entering. Matching every entry on the 2024 and 2025 All-Star heat sheets back to that season&rsquo;s qualifier lists lets us account for every single qualification (one swimmer under the cut in one event) and put it in exactly one of four buckets: it became a swim; it was <i>structurally impossible</i> because the swimmer qualified in more than 3 events and had to drop it (about a quarter of qualifiers hit the cap); the swimmer skipped All Stars entirely; or the swimmer attended but swam a lighter program than allowed. League-wide, 75% of qualifications became swims, the 3-event cap removed 15%, skipping removed 10% &mdash; and the fourth bucket is essentially empty: swimmers who show up swim everything they&rsquo;re allowed to. The balance shifts sharply with age:</p>
+    <table><thead><tr><th>Age group</th><th class="r">Swam</th><th class="r">Lost to 3-event cap</th><th class="r">Lost to skipping</th><th class="r">Fill rate used in tool</th></tr></thead><tbody>
+      <tr><td>6 &amp; Under</td><td class="r">91%</td><td class="r">0%</td><td class="r">9%</td><td class="r"><b>91%</b></td></tr>
+      <tr><td>8 &amp; Under pool</td><td class="r">89%</td><td class="r">6%</td><td class="r">5%</td><td class="r"><b>95%</b></td></tr>
+      <tr><td>10 &amp; Under pool</td><td class="r">76%</td><td class="r">19%</td><td class="r">5%</td><td class="r"><b>94%</b></td></tr>
+      <tr><td>11-12</td><td class="r">75%</td><td class="r">19%</td><td class="r">6%</td><td class="r"><b>93%</b></td></tr>
+      <tr><td>13-14</td><td class="r">73%</td><td class="r">17%</td><td class="r">10%</td><td class="r"><b>88%</b></td></tr>
+      <tr><td>15-18</td><td class="r">61%</td><td class="r">17%</td><td class="r">22%</td><td class="r"><b>74%</b></td></tr>
+    </tbody></table>
+    <p class="tblnote">Share of all 2,631 qualifications across 2024&ndash;25, pooled; the yearly splits agree within a few points. The two loss mechanisms behave differently: for ages 9&ndash;12 attendance is excellent and the 3-event cap does nearly all the trimming, while for 15-18 skipping the meet is the single biggest leak. The tool treats them differently too &mdash; the cap is applied exactly, swimmer by swimmer, assuming each swims their 3 highest-ranked events (true for 88&ndash;91% of entries); the &ldquo;fill rate&rdquo; then covers attendance on the slots that survive the cap.</p>
+
+    <h3>Putting it together</h3>
+    <p>Projected entries = today&rsquo;s qualifiers, grown by the divisionals rate for that age group, with each projected qualifier swimming their top 3 qualified events at the fill rate for their age. Because of the 3-event limit, the tool recomputes the whole league on every adjustment &mdash; loosening one event can pull a swimmer&rsquo;s third swim away from another event, and the projections reflect that.</p>
+    <p><b>Accuracy check.</b> Run against 2025 as a blind test &mdash; using only pre-divisionals rankings and 2024 parameters &mdash; each method alone projected actual All-Star field sizes with a mean error of about 1.8 swimmers; their average did the same while flagging 21 of the 23 events that truly ran under 18 &mdash; two borderline misses, with only a handful of extra flags that finished just over. That average is what the tool runs on.</p>
+
+  </details>
+
+  <details class="meth">
+    <summary>Technical notes (data, model detail, backtest)</summary>
+    <div class="body">
+      <p><b>Data.</b> Current 2026 league rankings (Top 50 per event, through the final week of the regular season), the adopted 2026 All-Star cuts, and two full seasons of history: 2024 and 2025 pre-divisional rankings, post-divisional rankings, and All-Star heat sheets.</p>
+      <p><b>Model.</b> For each event: count qualifiers under the candidate cut; compute the divisionals bump two ways &mdash; count growth for the event&rsquo;s age group (<span id="rTable"></span>) and a rank-by-rank shift of the current ranking curve using the measured drop profile of the Nth-ranked time &mdash; and average them; assign each current qualifier their top 3 qualified events by rank; multiply each assignment by the fill rate for the swimmer&rsquo;s age group. Divisionals additions are treated as single-event qualifiers entering at the event&rsquo;s fill rate. The whole league recomputes on every adjustment, so cross-event displacement from the 3-event limit is captured. Because rankings are cumulative bests, the curve shift is structurally one-directional: the Nth time can only get faster. The expansion rows name this view&rsquo;s crossers: the divisionals bubble lists every swimmer whose current time sits within their rank&rsquo;s expected drop of the cut. Projections are compared as displayed &mdash; rounded to whole swimmers &mdash; for status, suggestions, and counts alike, crediting the expected fractional swimmer; the backtest&rsquo;s conservative bias (about 0.7 swimmers of underprojection) makes that credit empirically safe. Each swimmer&rsquo;s event preference order &mdash; rank position first, then time relative to the adopted cut &mdash; is precomputed once and held fixed; any proposed cut vector is resolved against that order, and &ldquo;Suggest&rdquo; iterates the whole league to a fixed point where no event&rsquo;s suggestion changes, so the result is self-consistent and running it again changes nothing.</p>
+      <p><b>Swimmer detail rows.</b> Expanding an event lists its qualifiers under the proposed cut in rank order. A struck-through swimmer is projected to spend all 3 swims on higher-ranked events; the note shows those events and the swimmer&rsquo;s rank in each. Attendance is probabilistic, so expected no-shows are stated as a count rather than pinned to names. Swimmers who qualify under the proposed cut but not the adopted cut are tagged NEW.</p>
+      <p><b>Meet time.</b> Heats of 6 seeded fastest-together &mdash; every ODSL All-Star heat sheet from 2023 through 2025 seeds 6 lanes &mdash; with each heat costing its slowest seed time plus 30 seconds. Projected entries beyond the ranked list (divisionals additions) are assumed to seed at the cut time. Projected heat counts assume full heats; the 2024&ndash;25 sheets actually printed about 10% more heats than that floor, from scratches and seeding gaps, so hosts should pad accordingly. Totals exclude breaks and ceremonies, so use the difference between proposed and adopted, which is robust to those exclusions.</p>
+      <p><b>Backtest.</b> Given only 2025 pre-divisional rankings and 2024-derived parameters, the blended pipeline projected actual 2025 All-Star field sizes with a mean error of 1.75 swimmers (37 of 45 measurable events within &plusmn;3) and flagged 21 of the 23 events that ran below the 18-swimmer standard (14 of the 16 below 16). Projections for events with 50+ current qualifiers are lower bounds, shown with a &ge; sign.</p>
+      <p><b>Reading the table.</b> The colored Projected All-Star Entries number carries the field verdict: <span style="color:var(--red);font-weight:800">red</span> below the target minimum, <span style="color:var(--green);font-weight:800">green</span> from the target through 24 (the top of ODSL&rsquo;s historical 16&ndash;24 range; four full 6-lane heats), <span style="color:var(--blue);font-weight:800">blue</span> 25 or more &mdash; a fifth heat, which cannot be reduced mid-season. The Suggested Action column is the recommendation for each event at the current target: <b>Raise Cut Time</b> when the projected field is below the target minimum, <b>No change to cut time</b> when the cut already projects at or above it, and <b>Cut Time Raised</b> once a proposed raise has brought the event to the target &mdash; the amount is the difference between the Adopted and Proposed cut columns. &ldquo;Suggest&rdquo; finds the smallest loosening that brings an event below standard up to the target; candidate cuts include every 0.01-second point where the projection can change &mdash; each ranked time and each projected divisionals crossing &mdash; so the cut is dialed to the exact target whenever one exists. When a tie at the line or an exhausted ranked list makes the exact target unreachable, Suggest settles on the nearest achievable field and says why beneath the proposed cut.</p>
+    </div>
+  </details>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = {"events":[{"n":1,"key":"Boys 6 & Under|25|Freestyle","label":"Boys 6 & Under 25m Freestyle","short":"25 Free","cl":"6&U","cut":29.82,"rows":[[0,21.24],[1,24.33],[2,24.97],[3,25.15],[4,26.34],[5,26.34],[6,26.63],[7,27.94],[8,28.01],[9,28.68],[10,28.76],[11,28.95],[12,29.26],[13,29.48],[14,30.45],[15,30.8],[16,31.35],[17,31.47],[18,31.66],[19,31.68],[20,32.27],[21,32.35],[22,32.47],[23,32.68],[24,33.01],[25,33.39],[26,33.43],[27,33.45],[28,33.61],[29,33.86],[30,33.95],[31,34.05],[32,34.12],[33,34.13],[34,34.33],[35,34.69],[36,34.87],[37,34.88],[38,34.98],[39,35.0],[40,35.16],[41,35.43],[42,35.57],[43,37.16],[44,37.28],[45,37.42],[46,37.66],[47,37.67],[48,37.75],[49,37.78]],"depth":50},{"n":2,"key":"Girls 6 & Under|25|Freestyle","label":"Girls 6 & Under 25m Freestyle","short":"25 Free","cl":"6&U","cut":27.48,"rows":[[50,19.78],[51,21.88],[52,23.77],[53,23.89],[54,25.06],[55,25.34],[56,25.43],[57,25.64],[58,25.82],[59,25.99],[60,26.01],[61,26.02],[62,26.38],[63,26.44],[64,26.75],[65,27.07],[66,27.28],[67,27.39],[68,27.72],[69,27.99],[70,28.3],[71,28.37],[72,28.52],[73,29.02],[74,29.17],[75,29.54],[76,29.6],[77,29.72],[78,29.74],[79,29.88],[80,30.06],[81,30.09],[82,30.19],[83,30.4],[84,30.97],[85,31.0],[86,31.13],[87,31.23],[88,31.41],[89,31.43],[90,31.47],[91,31.9],[92,31.97],[93,32.34],[94,32.4],[95,32.44],[96,33.52],[97,33.73],[98,33.81],[99,33.94]],"depth":50},{"n":3,"key":"Boys 7-8|25|Freestyle","label":"Boys 7-8 25m Freestyle","short":"25 Free","cl":"8&U pool","cut":20.46,"rows":[[100,16.08],[101,17.69],[102,17.82],[103,18.47],[104,18.97],[105,19.15],[106,19.3],[107,19.43],[108,19.49],[109,19.49],[110,19.6],[111,19.62],[112,19.65],[113,19.87],[114,20.0],[115,20.0],[116,20.04],[117,20.2],[118,20.23],[119,20.3],[120,20.37],[121,20.45],[122,20.47],[123,20.49],[124,20.7],[125,20.78],[126,20.84],[127,20.84],[128,20.88],[129,20.9],[130,21.0],[131,21.02],[132,21.18],[133,21.19],[134,21.21],[135,21.22],[136,21.38],[137,21.47],[138,21.61],[139,21.66],[140,21.73],[141,21.83],[142,21.84],[143,21.94],[144,22.02],[145,22.03],[146,22.16],[147,22.16],[148,22.17],[149,22.3]],"depth":50},{"n":4,"key":"Girls 7-8|25|Freestyle","label":"Girls 7-8 25m Freestyle","short":"25 Free","cl":"8&U pool","cut":20.47,"rows":[[150,18.22],[151,18.47],[152,18.73],[153,18.97],[154,19.07],[155,19.21],[156,19.27],[157,19.36],[158,19.67],[159,19.78],[160,19.85],[161,19.96],[162,20.01],[163,20.03],[164,20.11],[165,20.12],[166,20.16],[167,20.31],[168,20.46],[169,20.54],[170,20.62],[171,20.66],[172,20.77],[173,20.78],[174,20.83],[175,20.84],[176,20.9],[177,20.9],[178,20.94],[179,20.99],[180,21.05],[181,21.15],[182,21.25],[183,21.27],[184,21.31],[185,21.4],[186,21.43],[187,21.47],[188,21.48],[189,21.66],[190,21.71],[191,21.74],[192,21.88],[193,21.96],[194,21.97],[195,22.0],[196,22.02],[197,22.1],[198,22.13],[199,22.19]],"depth":50},{"n":5,"key":"Boys 9-10|50|Freestyle","label":"Boys 9-10 50m Freestyle","short":"50 Free","cl":"10&U pool","cut":39.43,"rows":[[200,34.41],[201,34.62],[202,34.86],[203,35.82],[204,36.19],[205,36.41],[206,36.43],[207,36.47],[208,36.68],[209,36.91],[210,37.09],[211,37.14],[212,37.52],[213,37.94],[214,38.03],[215,38.15],[216,38.23],[217,38.38],[218,38.45],[219,38.53],[220,38.73],[221,38.77],[222,38.81],[223,39.0],[224,39.2],[225,39.25],[226,39.43],[227,39.49],[228,39.59],[229,39.73],[230,39.78],[231,40.08],[232,40.18],[233,40.37],[234,40.39],[235,40.41],[236,40.42],[237,40.45],[238,40.52],[239,40.74],[240,40.8],[241,40.82],[242,40.99],[243,41.02],[244,41.02],[245,41.03],[246,41.09],[247,41.26],[248,41.29],[249,41.32]],"depth":50},{"n":6,"key":"Girls 9-10|50|Freestyle","label":"Girls 9-10 50m Freestyle","short":"50 Free","cl":"10&U pool","cut":38.52,"rows":[[250,35.56],[251,35.75],[252,35.99],[253,36.5],[254,36.58],[255,37.14],[256,37.15],[257,37.21],[258,37.45],[259,37.97],[260,38.02],[261,38.15],[262,38.3],[263,38.49],[264,38.5],[265,38.84],[266,38.86],[267,38.89],[268,39.05],[269,39.09],[270,39.11],[271,39.21],[272,39.21],[273,39.32],[274,39.59],[275,39.8],[276,39.88],[277,39.91],[278,39.97],[279,40.06],[280,40.1],[281,40.31],[282,40.34],[283,40.37],[284,40.4],[285,40.41],[286,40.58],[287,40.64],[288,40.68],[289,40.88],[290,41.02],[291,41.17],[292,41.18],[293,41.33],[294,41.38],[295,41.49],[296,41.5],[297,41.74],[298,41.79],[299,41.84]],"depth":50},{"n":7,"key":"Boys 11-12|50|Freestyle","label":"Boys 11-12 50m Freestyle","short":"50 Free","cl":"11-12","cut":32.53,"rows":[[300,29.38],[301,30.3],[302,30.34],[303,30.58],[304,30.82],[305,30.9],[306,30.97],[307,31.05],[308,31.13],[309,31.16],[310,31.54],[311,31.69],[312,31.77],[313,32.17],[314,32.21],[315,32.28],[316,32.4],[317,32.52],[318,32.68],[319,32.85],[320,33.03],[321,33.13],[322,33.13],[323,33.22],[324,33.37],[325,33.69],[326,33.74],[327,33.79],[328,33.89],[329,34.01],[330,34.18],[331,34.22],[332,34.22],[333,34.31],[334,34.53],[335,34.56],[336,34.6],[337,34.64],[338,34.76],[339,35.1],[340,35.13],[341,35.18],[342,35.27],[343,35.49],[344,35.51],[345,35.61],[346,35.78],[347,35.88],[348,35.9],[349,35.9]],"depth":50},{"n":8,"key":"Girls 11-12|50|Freestyle","label":"Girls 11-12 50m Freestyle","short":"50 Free","cl":"11-12","cut":33.26,"rows":[[350,29.8],[351,30.04],[352,30.59],[353,30.64],[354,30.66],[355,31.37],[356,32.03],[357,32.2],[358,32.44],[359,32.46],[360,32.5],[361,32.54],[362,32.67],[363,32.68],[364,32.8],[365,32.85],[366,32.96],[367,33.19],[368,33.19],[369,33.2],[370,33.38],[371,33.49],[372,33.77],[373,33.79],[374,33.85],[375,34.13],[376,34.19],[377,34.44],[378,34.46],[379,34.56],[380,34.59],[381,34.62],[382,34.67],[383,34.79],[384,34.91],[385,34.93],[386,34.94],[387,35.07],[388,35.09],[389,35.12],[390,35.17],[391,35.23],[392,35.28],[393,35.28],[394,35.3],[395,35.32],[396,35.34],[397,35.35],[398,35.36],[399,35.4]],"depth":50},{"n":9,"key":"Boys 13-14|50|Freestyle","label":"Boys 13-14 50m Freestyle","short":"50 Free","cl":"13-14","cut":28.13,"rows":[[400,26.31],[401,26.41],[402,26.67],[403,26.97],[404,27.32],[405,27.43],[406,27.46],[407,27.61],[408,27.84],[409,27.85],[410,27.99],[411,28.12],[412,28.43],[413,28.55],[414,28.56],[415,28.56],[416,28.57],[417,28.76],[418,29.21],[419,29.24],[420,29.38],[421,29.39],[422,29.48],[423,29.7],[424,29.97],[425,30.09],[426,30.22],[427,30.22],[428,30.27],[429,30.28],[430,30.34],[431,30.57],[432,30.59],[433,30.78],[434,30.81],[435,30.83],[436,31.0],[437,31.09],[438,31.11],[439,31.18],[440,31.19],[441,31.22],[442,31.23],[443,31.26],[444,31.35],[445,31.35],[446,31.36],[447,31.37],[448,31.38],[449,31.38],[450,31.38]],"depth":51},{"n":10,"key":"Girls 13-14|50|Freestyle","label":"Girls 13-14 50m Freestyle","short":"50 Free","cl":"13-14","cut":31.94,"rows":[[451,27.54],[452,28.78],[453,28.99],[454,29.22],[455,30.04],[456,30.44],[457,30.48],[458,30.62],[459,30.78],[460,31.12],[461,31.15],[462,31.22],[463,31.25],[464,31.31],[465,31.36],[466,31.66],[467,31.7],[468,31.72],[469,32.16],[470,32.2],[471,32.29],[472,32.4],[473,32.43],[474,32.44],[475,32.46],[476,32.48],[477,32.5],[478,32.54],[479,32.59],[480,32.6],[481,32.61],[482,32.72],[483,32.96],[484,32.96],[485,32.97],[486,32.99],[487,33.07],[488,33.13],[489,33.23],[490,33.26],[491,33.29],[492,33.3],[493,33.31],[494,33.33],[495,33.35],[496,33.43],[497,33.45],[498,33.5],[499,33.51],[500,33.56]],"depth":50},{"n":11,"key":"Men 15-18|50|Freestyle","label":"Men 15-18 50m Freestyle","short":"50 Free","cl":"15-18","cut":27.03,"rows":[[501,24.77],[502,25.13],[503,26.06],[504,26.06],[505,26.09],[506,26.19],[507,26.22],[508,26.34],[509,26.39],[510,26.43],[511,26.67],[512,26.67],[513,26.72],[514,26.78],[515,27.01],[516,27.01],[517,27.03],[518,27.03],[519,27.12],[520,27.2],[521,27.2],[522,27.23],[523,27.25],[524,27.26],[525,27.31],[526,27.41],[527,27.49],[528,27.53],[529,27.53],[530,27.54],[531,27.57],[532,27.59],[533,27.65],[534,27.65],[535,27.71],[536,27.78],[537,27.82],[538,27.82],[539,27.83],[540,27.84],[541,27.91],[542,27.96],[543,27.97],[544,28.0],[545,28.03],[546,28.15],[547,28.19],[548,28.21],[549,28.26],[550,28.3]],"depth":50},{"n":12,"key":"Women 15-18|50|Freestyle","label":"Women 15-18 50m Freestyle","short":"50 Free","cl":"15-18","cut":31.29,"rows":[[551,28.02],[552,28.62],[553,29.04],[554,29.17],[555,29.36],[556,29.67],[557,30.53],[558,30.61],[559,30.75],[560,30.81],[561,30.82],[562,30.89],[563,30.94],[564,30.99],[565,31.07],[566,31.09],[567,31.1],[568,31.12],[569,31.19],[570,31.28],[571,31.28],[572,31.29],[573,31.35],[574,31.4],[575,31.52],[576,31.57],[577,31.62],[578,31.63],[579,31.68],[580,31.83],[581,31.86],[582,31.94],[583,31.97],[584,31.98],[585,32.07],[586,32.13],[587,32.18],[588,32.18],[589,32.25],[590,32.35],[591,32.46],[592,32.46],[593,32.48],[594,32.5],[595,32.51],[596,32.51],[597,32.63],[598,32.64],[599,32.76],[600,32.81]],"depth":50},{"n":13,"key":"Boys 6 & Under|25|Backstroke","label":"Boys 6 & Under 25m Backstroke","short":"25 Back","cl":"6&U","cut":34.55,"rows":[[0,26.47],[4,28.44],[6,29.42],[5,30.56],[1,31.13],[8,31.44],[9,31.77],[32,32.33],[11,32.38],[3,32.63],[34,33.02],[23,33.41],[33,34.17],[44,34.2],[2,34.38],[27,35.31],[35,35.43],[28,35.47],[20,36.06],[13,36.18],[12,36.31],[14,36.34],[26,37.84],[17,38.28],[601,38.69],[10,39.7],[7,39.84],[602,39.87],[603,39.95],[42,40.39],[18,40.54],[16,40.93],[15,40.98],[604,41.01],[25,41.08],[605,41.36],[19,42.25],[30,42.83],[606,43.08],[40,43.5],[48,43.77],[47,43.78],[607,43.85],[608,44.22],[36,45.01],[609,45.38],[43,45.75],[38,45.78],[610,46.08],[611,46.48]],"depth":50},{"n":14,"key":"Girls 6 & Under|25|Backstroke","label":"Girls 6 & Under 25m Backstroke","short":"25 Back","cl":"6&U","cut":31.92,"rows":[[50,24.66],[51,26.5],[58,29.28],[54,29.35],[67,30.19],[56,30.38],[59,30.56],[61,30.78],[62,30.9],[98,31.32],[57,31.56],[66,31.58],[60,31.84],[84,31.93],[68,32.03],[63,32.26],[75,32.53],[74,33.14],[71,33.21],[612,33.32],[64,33.6],[65,33.65],[77,34.39],[52,34.43],[69,34.52],[83,34.66],[89,34.73],[86,34.87],[73,35.11],[53,35.61],[613,36.03],[614,36.11],[615,36.18],[616,36.19],[617,36.19],[618,36.21],[87,36.25],[619,36.4],[91,36.44],[620,36.48],[85,36.71],[621,36.91],[78,36.92],[81,36.92],[622,37.22],[82,37.35],[623,37.37],[624,37.48],[90,37.96],[55,38.16],[80,38.16]],"depth":51},{"n":15,"key":"Boys 7-8|25|Backstroke","label":"Boys 7-8 25m Backstroke","short":"25 Back","cl":"8&U pool","cut":25.05,"rows":[[101,19.49],[100,20.15],[102,22.03],[103,22.76],[117,23.12],[104,23.21],[108,23.31],[105,23.32],[106,23.37],[123,23.83],[135,23.88],[625,24.5],[626,24.52],[115,24.6],[122,24.63],[109,24.67],[121,24.74],[627,24.74],[127,24.98],[134,25.12],[144,25.3],[628,25.72],[114,25.91],[142,25.91],[629,25.95],[148,26.02],[110,26.13],[145,26.24],[141,26.31],[111,26.57],[118,26.71],[630,26.75],[631,26.77],[112,26.82],[137,26.84],[632,26.88],[129,26.93],[116,26.96],[149,26.97],[633,27.0],[126,27.0],[132,27.01],[113,27.02],[120,27.06],[634,27.14],[140,27.14],[138,27.16],[635,27.23],[636,27.34],[637,27.35],[131,27.35]],"depth":51},{"n":16,"key":"Girls 7-8|25|Backstroke","label":"Girls 7-8 25m Backstroke","short":"25 Back","cl":"8&U pool","cut":25.63,"rows":[[152,21.48],[150,21.79],[176,22.51],[163,22.91],[171,23.55],[156,23.78],[170,24.03],[165,24.05],[182,24.14],[638,24.29],[173,24.34],[169,24.41],[153,24.42],[155,24.46],[639,24.72],[157,24.76],[158,24.85],[162,24.91],[197,24.93],[640,25.13],[183,25.14],[177,25.29],[194,25.34],[181,25.55],[159,25.71],[641,25.73],[198,25.81],[642,25.81],[643,25.88],[184,25.89],[644,25.89],[645,26.07],[186,26.08],[167,26.13],[180,26.15],[646,26.15],[647,26.23],[161,26.28],[193,26.29],[166,26.37],[648,26.43],[185,26.5],[649,26.54],[650,26.54],[187,26.56],[175,26.59],[189,26.85],[164,26.89],[651,27.03],[179,27.14]],"depth":50},{"n":17,"key":"Boys 9-10|50|Backstroke","label":"Boys 9-10 50m Backstroke","short":"50 Back","cl":"10&U pool","cut":46.99,"rows":[[201,40.14],[209,40.66],[215,42.37],[202,42.77],[208,43.09],[200,43.14],[247,44.6],[203,44.7],[222,45.15],[205,45.28],[204,45.51],[207,45.51],[218,45.55],[210,45.72],[219,46.37],[652,46.52],[230,46.53],[221,46.63],[223,46.66],[653,46.81],[217,47.1],[654,47.18],[240,47.2],[655,47.38],[656,47.49],[225,47.66],[236,47.79],[220,47.91],[657,48.33],[243,48.65],[658,48.85],[659,49.03],[233,49.36],[227,49.51],[224,49.77],[660,50.59],[244,50.65],[661,50.7],[213,50.73],[662,50.91],[663,51.11],[234,51.37],[216,51.48],[241,51.62],[239,51.75],[664,51.82],[665,51.84],[666,51.87],[667,51.92],[238,52.19]],"depth":50},{"n":18,"key":"Girls 9-10|50|Backstroke","label":"Girls 9-10 50m Backstroke","short":"50 Back","cl":"10&U pool","cut":47.62,"rows":[[252,41.15],[253,41.68],[251,42.75],[256,43.65],[258,44.16],[263,44.64],[280,44.91],[259,44.97],[254,45.12],[257,45.27],[284,45.86],[264,45.99],[262,46.15],[276,46.62],[265,46.71],[668,46.96],[283,47.01],[285,47.09],[268,47.09],[295,47.25],[669,47.28],[274,47.31],[297,47.57],[267,47.62],[278,47.81],[260,47.97],[266,48.38],[272,48.5],[670,49.01],[290,49.1],[269,49.11],[671,49.11],[672,49.27],[673,49.37],[277,49.66],[273,49.93],[674,49.99],[675,50.0],[255,50.06],[676,50.39],[677,50.43],[678,50.74],[271,50.95],[679,50.97],[680,51.03],[681,51.37],[293,51.38],[299,51.66],[682,51.75],[683,51.77]],"depth":50},{"n":19,"key":"Boys 11-12|50|Backstroke","label":"Boys 11-12 50m Backstroke","short":"50 Back","cl":"11-12","cut":39.61,"rows":[[300,32.93],[302,35.44],[684,35.77],[307,36.01],[311,36.07],[315,36.13],[301,36.8],[312,37.25],[303,37.42],[306,38.04],[317,38.21],[331,38.35],[335,38.46],[318,38.53],[309,38.93],[310,39.03],[305,39.2],[685,39.28],[308,39.32],[316,39.66],[321,39.75],[324,39.88],[332,40.19],[686,40.52],[327,41.23],[323,41.42],[320,41.45],[336,41.67],[343,41.75],[687,41.82],[341,41.87],[314,41.89],[313,42.1],[339,42.25],[337,42.31],[328,42.36],[688,42.76],[334,42.84],[340,43.04],[345,43.16],[325,43.22],[689,43.26],[690,43.75],[691,43.85],[692,43.86],[342,43.89],[326,44.01],[693,44.25],[694,44.34],[695,44.54]],"depth":50},{"n":20,"key":"Girls 11-12|50|Backstroke","label":"Girls 11-12 50m Backstroke","short":"50 Back","cl":"11-12","cut":38.26,"rows":[[351,33.76],[350,34.65],[353,34.91],[352,35.01],[354,35.47],[364,35.85],[368,36.12],[356,36.53],[358,36.59],[363,36.89],[360,37.08],[362,37.14],[361,37.28],[359,37.42],[373,38.25],[365,38.26],[396,38.37],[696,38.79],[366,38.81],[374,38.83],[369,39.01],[399,39.35],[377,39.44],[355,39.72],[370,39.75],[376,39.8],[393,40.36],[397,40.44],[697,40.49],[372,40.56],[698,40.58],[381,40.59],[699,40.64],[700,40.67],[382,40.78],[380,41.08],[701,41.14],[702,41.28],[383,41.34],[367,41.47],[384,41.61],[703,41.62],[379,41.72],[704,41.9],[357,41.99],[705,42.23],[706,42.44],[707,42.81],[388,43.08],[708,43.11]],"depth":50},{"n":21,"key":"Boys 13-14|50|Backstroke","label":"Boys 13-14 50m Backstroke","short":"50 Back","cl":"13-14","cut":33.88,"rows":[[709,29.31],[400,30.7],[402,31.23],[407,31.72],[710,31.73],[408,31.9],[401,32.07],[406,32.19],[444,32.35],[418,32.53],[409,32.73],[404,32.84],[416,32.84],[410,33.04],[424,33.38],[412,33.39],[428,33.51],[403,33.54],[411,33.59],[417,33.79],[430,33.84],[420,33.87],[443,34.19],[415,34.41],[429,34.75],[425,34.96],[435,35.15],[431,35.37],[711,36.02],[421,36.44],[433,36.7],[712,36.72],[713,36.97],[714,36.99],[440,37.31],[446,37.64],[715,37.71],[439,37.75],[426,38.12],[716,38.3],[717,38.57],[718,38.58],[432,38.6],[719,38.61],[720,39.04],[721,39.08],[442,39.1],[722,39.32],[723,39.39],[724,39.51]],"depth":50},{"n":22,"key":"Girls 13-14|50|Backstroke","label":"Girls 13-14 50m Backstroke","short":"50 Back","cl":"13-14","cut":37.87,"rows":[[452,33.24],[453,33.78],[457,34.62],[470,35.05],[455,35.08],[480,35.3],[485,35.4],[462,35.68],[454,35.94],[456,35.96],[479,36.05],[471,36.18],[459,36.21],[725,37.08],[461,37.1],[494,37.3],[463,37.41],[481,37.44],[497,37.44],[465,37.5],[468,37.5],[469,37.59],[477,37.6],[464,37.66],[726,37.75],[460,37.86],[478,38.03],[727,38.26],[728,38.3],[488,38.32],[473,38.44],[491,38.44],[729,38.8],[496,38.98],[495,39.02],[493,39.16],[474,39.24],[498,39.38],[730,39.4],[490,39.41],[482,39.46],[476,39.47],[731,39.57],[732,39.64],[733,39.65],[734,39.68],[735,39.77],[489,39.78],[467,40.02],[736,40.05]],"depth":50},{"n":23,"key":"Men 15-18|50|Backstroke","label":"Men 15-18 50m Backstroke","short":"50 Back","cl":"15-18","cut":32.74,"rows":[[503,28.38],[501,28.98],[536,30.09],[506,30.1],[523,30.4],[515,30.93],[550,31.06],[526,31.07],[737,31.08],[527,31.25],[505,31.25],[738,31.39],[543,31.52],[544,31.83],[510,32.06],[739,32.12],[511,32.34],[512,32.37],[514,32.39],[545,32.41],[528,32.42],[521,32.44],[524,32.44],[546,32.51],[518,32.64],[516,32.73],[740,32.83],[531,32.83],[741,33.16],[742,33.16],[743,33.26],[532,33.51],[513,33.61],[534,33.68],[744,33.76],[509,33.82],[535,33.91],[745,34.07],[522,34.08],[533,34.11],[746,34.12],[747,34.13],[748,34.47],[520,34.54],[542,34.72],[749,34.76],[750,35.24],[751,35.28],[752,35.49],[541,35.52]],"depth":50},{"n":24,"key":"Women 15-18|50|Backstroke","label":"Women 15-18 50m Backstroke","short":"50 Back","cl":"15-18","cut":36.34,"rows":[[552,31.6],[753,31.65],[555,32.69],[559,32.97],[553,33.18],[556,33.37],[554,33.53],[561,34.2],[560,34.21],[579,34.47],[563,34.78],[581,34.8],[754,35.1],[755,35.32],[756,35.38],[593,35.6],[568,35.72],[595,36.06],[757,36.16],[569,36.33],[566,36.37],[588,36.48],[758,36.65],[562,36.69],[759,36.69],[598,37.01],[760,37.04],[761,37.07],[574,37.09],[599,37.16],[584,37.16],[578,37.22],[572,37.28],[762,37.3],[573,37.39],[576,37.61],[587,37.63],[585,37.79],[577,37.95],[763,37.97],[580,38.27],[764,38.32],[592,38.38],[765,38.46],[570,38.48],[589,38.6],[766,39.36],[590,39.51],[596,39.65],[767,39.66]],"depth":50},{"n":25,"key":"Boys 8 & Under|25|Breaststroke","label":"Boys 8 & Under 25m Breaststroke","short":"25 Breast","cl":"8&U pool","cut":28.06,"rows":[[104,23.88],[100,24.0],[103,24.52],[101,26.03],[110,27.25],[115,27.32],[126,27.37],[768,27.37],[107,27.43],[129,27.51],[2,27.66],[769,27.89],[121,27.96],[135,28.05],[632,28.06],[144,28.31],[109,28.89],[108,28.9],[770,30.36],[141,30.48],[145,30.69],[130,30.76],[771,30.96],[139,30.99],[772,31.02],[773,31.03],[117,31.19],[11,31.44],[106,31.8],[774,32.12],[775,32.18],[776,32.23],[777,32.43],[122,32.46],[143,32.47],[149,32.48],[778,32.62],[626,32.78],[779,32.87],[780,33.37],[781,33.42],[148,33.5],[111,33.52],[782,33.57],[628,33.72],[783,33.92],[784,33.99],[785,34.09],[786,34.17],[787,34.33]],"depth":50},{"n":26,"key":"Girls 8 & Under|25|Breaststroke","label":"Girls 8 & Under 25m Breaststroke","short":"25 Breast","cl":"8&U pool","cut":29.39,"rows":[[151,25.03],[153,25.46],[172,25.87],[160,27.02],[162,27.15],[177,27.22],[152,27.66],[159,27.78],[788,27.9],[182,28.12],[156,28.65],[789,28.66],[174,28.68],[185,28.76],[790,28.81],[166,28.89],[165,29.13],[150,29.22],[791,29.22],[792,29.25],[155,29.28],[191,29.33],[161,29.38],[169,29.43],[793,29.44],[173,29.57],[50,29.59],[794,29.71],[171,29.72],[795,29.78],[643,29.85],[642,29.94],[651,29.96],[154,30.13],[796,30.3],[797,30.64],[798,30.72],[799,30.74],[800,30.75],[801,30.82],[195,30.83],[802,30.99],[803,31.09],[804,31.09],[805,31.5],[641,31.63],[806,31.66],[167,31.94],[178,32.09],[807,32.14]],"depth":50},{"n":27,"key":"Boys 9-10|50|Breaststroke","label":"Boys 9-10 50m Breaststroke","short":"50 Breast","cl":"10&U pool","cut":51.98,"rows":[[808,45.61],[204,46.62],[202,47.4],[211,47.7],[201,48.85],[809,49.06],[212,49.21],[215,50.57],[207,50.66],[218,51.01],[209,51.35],[655,51.42],[653,51.44],[242,51.46],[810,51.59],[238,51.77],[213,51.77],[217,51.9],[228,52.44],[237,52.88],[226,52.95],[229,53.0],[208,53.03],[811,53.52],[812,53.67],[813,54.09],[814,54.24],[222,54.77],[663,54.77],[210,55.33],[230,55.8],[235,55.84],[224,55.97],[815,56.08],[206,56.19],[816,56.25],[245,56.87],[656,56.88],[817,57.1],[227,57.14],[216,57.19],[225,57.29],[818,57.34],[200,57.36],[819,57.75],[659,57.8],[820,58.14],[821,58.36],[246,58.6],[822,58.68]],"depth":50},{"n":28,"key":"Girls 9-10|50|Breaststroke","label":"Girls 9-10 50m Breaststroke","short":"50 Breast","cl":"10&U pool","cut":53.5,"rows":[[276,43.91],[257,48.93],[823,49.16],[250,50.9],[259,50.94],[263,51.42],[251,51.59],[262,51.68],[824,51.71],[256,51.86],[254,52.15],[270,52.19],[292,52.27],[280,52.39],[279,52.53],[825,52.61],[253,52.65],[826,53.0],[272,53.14],[291,53.18],[827,53.44],[268,53.69],[828,53.94],[294,53.97],[829,54.0],[830,54.06],[680,54.26],[831,54.46],[832,54.48],[672,54.87],[284,54.95],[833,55.06],[278,55.34],[275,55.59],[834,55.68],[835,56.01],[836,56.02],[298,56.04],[670,56.05],[683,56.29],[837,56.33],[288,56.56],[255,56.59],[838,56.73],[839,56.98],[277,57.65],[840,57.69],[273,57.73],[841,57.83],[842,57.88]],"depth":50},{"n":29,"key":"Boys 11-12|50|Breaststroke","label":"Boys 11-12 50m Breaststroke","short":"50 Breast","cl":"11-12","cut":43.44,"rows":[[300,37.7],[318,38.94],[309,40.15],[684,40.19],[308,40.22],[311,40.33],[317,40.45],[301,41.53],[312,42.11],[335,43.43],[314,43.7],[302,43.81],[313,44.36],[307,44.53],[305,44.63],[306,44.78],[331,44.79],[686,45.22],[310,45.39],[344,45.58],[337,45.64],[332,46.13],[315,46.15],[336,46.16],[342,46.18],[685,46.24],[329,46.66],[691,46.69],[320,46.74],[843,46.78],[844,47.12],[845,47.18],[846,47.39],[323,47.43],[847,47.44],[327,47.56],[694,47.78],[848,48.67],[849,48.72],[341,48.84],[324,48.85],[850,49.18],[347,49.24],[851,49.25],[334,49.42],[338,49.43],[852,49.56],[853,49.71],[321,49.75],[326,50.01]],"depth":50},{"n":30,"key":"Girls 11-12|50|Breaststroke","label":"Girls 11-12 50m Breaststroke","short":"50 Breast","cl":"11-12","cut":42.96,"rows":[[350,39.24],[351,39.43],[352,40.19],[355,40.66],[354,40.9],[374,41.0],[363,41.39],[357,41.51],[696,41.52],[375,42.36],[353,42.76],[377,42.95],[356,43.48],[381,43.56],[394,43.83],[370,43.99],[380,44.31],[397,44.33],[392,44.53],[371,44.53],[702,44.81],[390,44.97],[391,44.97],[384,45.03],[367,45.16],[360,45.35],[395,45.46],[854,45.59],[855,45.61],[856,45.66],[857,45.67],[699,45.81],[858,45.81],[859,45.85],[860,46.16],[861,46.46],[707,46.68],[369,46.69],[399,46.93],[364,47.1],[697,47.41],[862,47.57],[863,47.74],[362,47.88],[388,47.94],[864,47.95],[865,48.1],[704,48.12],[866,48.12],[867,48.3]],"depth":50},{"n":31,"key":"Boys 13-14|50|Breaststroke","label":"Boys 13-14 50m Breaststroke","short":"50 Breast","cl":"13-14","cut":38.78,"rows":[[401,33.65],[405,34.42],[407,34.86],[421,35.0],[710,35.16],[417,35.55],[431,36.09],[709,36.48],[435,36.94],[416,37.08],[400,37.18],[406,37.47],[420,37.65],[410,38.15],[438,38.28],[418,38.34],[403,38.42],[402,38.45],[868,38.86],[869,38.96],[429,39.05],[870,39.6],[408,39.89],[415,40.24],[409,40.55],[871,40.57],[425,40.96],[424,40.99],[450,41.07],[412,41.17],[717,41.17],[713,41.29],[445,41.34],[444,41.36],[872,41.51],[413,41.52],[430,41.56],[426,41.62],[873,41.63],[874,41.65],[875,41.66],[419,41.69],[876,41.72],[422,41.75],[877,41.89],[720,42.01],[433,42.18],[715,42.28],[878,42.35],[879,42.41]],"depth":50},{"n":32,"key":"Girls 13-14|50|Breaststroke","label":"Girls 13-14 50m Breaststroke","short":"50 Breast","cl":"13-14","cut":42.92,"rows":[[464,36.42],[459,38.09],[484,39.07],[454,39.21],[453,39.6],[452,39.93],[725,39.98],[455,40.05],[456,40.28],[471,40.37],[466,40.74],[485,40.78],[730,40.95],[880,41.03],[478,41.14],[462,42.46],[881,42.47],[477,42.57],[491,42.78],[483,42.85],[882,42.85],[732,43.12],[473,43.21],[460,43.29],[883,43.41],[884,43.41],[488,43.48],[468,43.89],[885,44.29],[463,44.34],[461,44.37],[482,44.51],[472,44.7],[499,44.76],[886,44.99],[887,45.12],[888,45.14],[727,45.21],[889,45.3],[890,45.46],[734,45.53],[891,45.63],[892,45.66],[487,45.67],[893,45.85],[894,46.23],[895,46.25],[896,46.3],[897,46.35],[898,46.39],[899,46.39]],"depth":51},{"n":33,"key":"Men 15-18|50|Breaststroke","label":"Men 15-18 50m Breaststroke","short":"50 Breast","cl":"15-18","cut":35.46,"rows":[[503,31.17],[738,31.9],[514,32.82],[526,33.0],[900,33.58],[506,33.78],[520,34.14],[509,34.23],[743,34.66],[740,34.74],[533,34.93],[545,34.96],[750,35.18],[501,35.23],[539,35.29],[532,35.43],[901,35.56],[537,35.62],[525,35.72],[902,35.72],[538,35.72],[528,35.84],[903,35.92],[904,36.31],[515,36.53],[529,36.55],[905,36.58],[524,36.63],[906,36.83],[536,36.97],[752,37.02],[907,37.06],[742,37.12],[540,37.25],[505,37.31],[746,37.44],[908,37.44],[519,37.44],[522,37.47],[909,37.49],[521,37.51],[910,37.8],[510,37.89],[911,38.03],[518,38.06],[531,38.16],[912,38.16],[523,38.28],[913,38.34],[534,38.36]],"depth":50},{"n":34,"key":"Women 15-18|50|Breaststroke","label":"Women 15-18 50m Breaststroke","short":"50 Breast","cl":"15-18","cut":40.79,"rows":[[551,35.47],[552,36.4],[558,37.0],[555,37.5],[556,37.72],[567,37.83],[554,37.9],[582,38.25],[563,38.64],[566,38.81],[578,39.47],[594,39.54],[591,39.71],[597,40.16],[564,40.73],[914,40.78],[560,40.8],[757,40.94],[583,40.98],[600,41.22],[754,41.24],[561,41.31],[915,41.33],[916,41.58],[759,41.74],[762,41.92],[917,42.04],[569,42.08],[761,42.18],[598,42.22],[918,42.37],[573,42.49],[756,42.76],[758,43.15],[764,43.21],[557,43.23],[919,43.5],[584,43.62],[585,43.65],[920,43.85],[766,43.9],[596,44.03],[593,44.2],[763,44.23],[921,44.25],[562,44.34],[586,44.5],[587,44.52],[922,44.62],[576,44.75]],"depth":50},{"n":35,"key":"Boys 8 & Under|25|Butterfly","label":"Boys 8 & Under 25m Butterfly","short":"25 Fly","cl":"8&U pool","cut":24.04,"rows":[[100,19.46],[101,21.2],[127,21.5],[110,22.4],[108,22.6],[103,22.79],[117,22.97],[118,23.19],[102,23.39],[121,24.01],[133,24.01],[104,24.03],[126,24.34],[107,24.45],[119,24.57],[106,24.63],[111,25.05],[148,25.19],[116,25.49],[135,25.68],[134,25.78],[124,25.92],[128,27.17],[130,27.39],[627,27.54],[120,27.63],[139,27.63],[923,28.27],[136,28.59],[123,29.22],[635,29.46],[131,29.72],[924,29.85],[782,29.88],[129,29.98],[2,30.96],[146,31.46],[114,31.47],[925,32.15],[926,32.5],[113,32.64],[122,32.75],[927,32.79],[928,33.28],[787,33.36],[144,33.57],[929,33.76],[768,33.9],[930,33.99],[3,34.4]],"depth":50},{"n":36,"key":"Girls 8 & Under|25|Butterfly","label":"Girls 8 & Under 25m Butterfly","short":"25 Fly","cl":"8&U pool","cut":26.2,"rows":[[151,21.31],[152,21.62],[155,21.72],[160,23.35],[50,23.36],[156,23.39],[150,23.65],[163,24.06],[184,24.62],[153,24.89],[931,24.91],[192,25.03],[154,25.15],[157,25.2],[180,25.25],[645,25.31],[932,25.32],[181,25.32],[183,25.41],[193,25.59],[933,25.68],[185,25.97],[187,26.1],[792,26.12],[934,26.18],[194,26.51],[935,26.85],[936,26.88],[171,26.9],[161,26.94],[173,27.25],[177,27.32],[182,27.47],[165,27.74],[641,28.02],[162,28.15],[788,28.32],[186,28.58],[191,28.59],[52,28.73],[937,28.8],[938,29.13],[939,29.3],[940,29.95],[798,30.14],[178,30.21],[176,30.24],[649,30.31],[941,31.03],[942,31.2]],"depth":50},{"n":37,"key":"Boys 9-10|25|Butterfly","label":"Boys 9-10 25m Butterfly","short":"25 Fly","cl":"10&U pool","cut":20.64,"rows":[[200,16.44],[205,18.45],[809,18.52],[215,18.75],[201,19.05],[202,19.29],[211,19.31],[226,19.46],[214,19.63],[208,19.65],[207,19.65],[210,19.68],[212,19.78],[222,19.89],[218,19.9],[217,19.99],[227,20.04],[245,20.13],[813,20.22],[206,20.47],[244,20.48],[223,20.53],[234,20.59],[242,20.7],[203,20.82],[237,20.84],[658,20.89],[221,20.9],[654,20.96],[240,21.02],[246,21.08],[220,21.18],[233,21.63],[213,21.65],[661,21.78],[943,21.83],[229,21.9],[247,21.95],[238,22.03],[204,22.04],[232,22.42],[944,22.5],[945,22.62],[231,22.63],[652,22.65],[230,22.72],[655,22.74],[946,23.0],[663,23.02],[656,23.09]],"depth":50},{"n":38,"key":"Girls 9-10|25|Butterfly","label":"Girls 9-10 25m Butterfly","short":"25 Fly","cl":"10&U pool","cut":20.86,"rows":[[253,17.33],[270,17.36],[280,17.48],[250,17.72],[252,18.13],[257,18.28],[258,18.55],[259,19.19],[285,19.48],[267,19.59],[255,19.65],[947,19.72],[251,19.8],[277,19.88],[278,20.03],[948,20.03],[292,20.03],[264,20.12],[263,20.12],[262,20.15],[949,20.2],[254,20.2],[261,20.28],[283,20.3],[273,20.41],[295,20.46],[265,20.53],[274,20.66],[950,20.66],[272,20.71],[276,20.73],[275,20.79],[671,20.93],[674,21.13],[297,21.22],[281,21.27],[284,21.28],[268,21.32],[288,21.32],[951,21.34],[266,21.54],[260,21.59],[672,21.68],[673,21.69],[952,21.74],[668,21.92],[823,22.03],[953,22.04],[669,22.07],[282,22.09]],"depth":50},{"n":39,"key":"Boys 11-12|50|Butterfly","label":"Boys 11-12 50m Butterfly","short":"50 Fly","cl":"11-12","cut":38.12,"rows":[[300,31.93],[303,32.39],[302,33.97],[307,34.32],[301,34.38],[315,35.03],[306,35.06],[310,35.07],[319,35.86],[320,36.07],[317,36.13],[318,36.17],[305,36.22],[327,36.36],[314,36.48],[304,36.59],[309,37.16],[312,37.25],[331,37.46],[343,37.98],[326,38.15],[333,38.6],[345,38.73],[311,39.13],[334,39.59],[325,39.78],[330,40.27],[954,40.41],[323,40.59],[955,41.5],[322,41.61],[956,41.63],[957,42.33],[313,42.41],[324,42.59],[690,42.75],[958,42.75],[335,42.79],[349,42.79],[340,43.1],[694,43.38],[348,43.45],[691,43.63],[851,44.06],[959,44.28],[960,44.88],[961,45.01],[687,46.72],[685,46.77],[962,47.13]],"depth":50},{"n":40,"key":"Girls 11-12|50|Butterfly","label":"Girls 11-12 50m Butterfly","short":"50 Fly","cl":"11-12","cut":38.85,"rows":[[351,32.84],[353,32.91],[350,33.56],[352,34.82],[354,35.43],[355,35.84],[363,35.84],[397,36.14],[359,36.4],[361,36.58],[360,37.04],[362,37.54],[369,37.59],[374,37.89],[373,37.93],[963,37.97],[696,38.1],[364,38.45],[356,38.62],[377,38.68],[964,38.68],[370,38.71],[379,38.84],[388,39.08],[702,39.24],[706,39.47],[704,39.54],[380,39.61],[365,39.65],[965,39.75],[384,39.78],[697,39.89],[357,39.98],[383,40.07],[396,40.11],[366,40.38],[707,40.94],[966,41.2],[398,41.82],[698,41.85],[393,41.88],[858,42.02],[967,42.05],[367,42.26],[395,42.44],[382,42.75],[968,42.93],[386,43.05],[387,43.88],[394,43.9]],"depth":50},{"n":41,"key":"Boys 13-14|50|Butterfly","label":"Boys 13-14 50m Butterfly","short":"50 Fly","cl":"13-14","cut":32.87,"rows":[[709,29.0],[406,29.09],[400,29.17],[402,29.41],[401,29.44],[412,29.68],[408,29.69],[403,30.22],[405,30.31],[404,30.49],[417,30.82],[409,31.08],[407,31.67],[410,32.08],[414,32.31],[427,32.41],[411,32.41],[421,32.5],[415,32.57],[430,32.75],[424,32.81],[418,32.96],[419,33.01],[440,33.16],[413,33.37],[416,33.57],[433,33.65],[429,33.65],[422,34.31],[428,34.58],[450,34.64],[423,34.69],[435,34.69],[444,34.85],[426,34.93],[714,35.04],[438,35.24],[969,35.63],[970,35.7],[878,35.85],[971,35.87],[877,36.0],[715,36.18],[712,36.22],[972,36.3],[973,36.59],[439,36.65],[711,36.72],[425,36.72],[719,36.81]],"depth":50},{"n":42,"key":"Girls 13-14|50|Butterfly","label":"Girls 13-14 50m Butterfly","short":"50 Fly","cl":"13-14","cut":35.39,"rows":[[451,31.1],[457,32.47],[479,32.5],[453,32.51],[455,32.95],[497,33.27],[462,33.84],[464,34.02],[461,34.4],[458,34.59],[474,34.62],[459,34.62],[473,34.78],[452,34.83],[460,34.85],[466,34.91],[456,34.93],[470,34.99],[483,35.09],[468,35.13],[484,35.14],[480,35.24],[485,35.37],[463,35.61],[477,35.69],[733,35.71],[467,35.79],[496,35.8],[465,35.88],[495,35.94],[471,35.99],[725,36.15],[490,36.4],[974,36.79],[975,36.99],[481,37.3],[482,37.41],[469,37.59],[487,37.71],[732,37.8],[494,37.88],[500,37.96],[976,38.47],[891,38.85],[728,38.89],[491,38.97],[977,38.99],[978,38.99],[734,39.05],[475,39.19]],"depth":50},{"n":43,"key":"Men 15-18|50|Butterfly","label":"Men 15-18 50m Butterfly","short":"50 Fly","cl":"15-18","cut":30.11,"rows":[[502,27.31],[501,27.44],[503,27.63],[511,28.38],[508,28.39],[738,28.44],[536,28.72],[543,28.95],[737,29.45],[505,29.5],[507,29.5],[523,29.53],[541,29.71],[546,29.78],[513,29.8],[521,29.8],[533,29.91],[741,30.0],[740,30.04],[979,30.07],[980,30.16],[514,30.19],[981,30.26],[516,30.26],[544,30.44],[982,30.45],[517,30.49],[742,30.5],[528,30.52],[512,30.53],[530,30.56],[509,30.57],[535,30.66],[515,30.67],[526,30.68],[522,30.68],[745,30.7],[524,30.72],[518,30.72],[550,30.76],[527,30.78],[525,30.88],[906,30.92],[510,30.96],[542,31.13],[520,31.14],[983,31.28],[904,31.31],[531,31.4],[984,31.53]],"depth":50},{"n":44,"key":"Women 15-18|50|Butterfly","label":"Women 15-18 50m Butterfly","short":"50 Fly","cl":"15-18","cut":35.37,"rows":[[753,29.94],[554,31.26],[555,32.07],[566,32.44],[553,32.85],[559,33.04],[560,33.06],[564,33.66],[556,34.22],[579,34.24],[561,34.27],[562,34.32],[582,34.37],[569,34.41],[592,34.44],[557,34.44],[581,34.56],[595,34.57],[583,34.6],[587,34.63],[570,34.69],[563,34.75],[764,34.8],[568,34.89],[756,34.92],[573,35.23],[580,35.43],[593,35.48],[572,35.8],[755,35.87],[590,36.07],[985,36.43],[599,36.46],[766,36.5],[754,36.52],[917,36.61],[574,36.68],[577,36.78],[588,36.83],[589,36.88],[759,36.95],[578,37.01],[986,37.25],[586,37.37],[987,37.38],[916,37.41],[600,37.44],[988,37.51],[989,37.65],[571,37.9]],"depth":50},{"n":45,"key":"Boys 10 & Under|100|Individual Medley","label":"Boys 10 & Under 100m IM","short":"100 IM","cl":"10&U pool","cut":104.69,"rows":[[202,89.04],[201,89.85],[215,93.33],[200,93.62],[809,94.05],[209,94.56],[207,97.24],[204,97.52],[211,99.62],[101,100.43],[208,100.51],[213,100.73],[218,101.05],[226,101.57],[217,101.85],[205,102.21],[210,103.72],[212,104.0],[240,104.27],[222,104.39],[220,104.99],[228,105.16],[227,107.59],[225,107.63],[655,107.84],[234,108.85],[243,108.89],[214,110.78],[238,110.8],[663,111.02],[235,111.88],[223,112.53],[813,112.72],[820,113.97],[246,114.15],[990,114.22],[104,116.13],[819,116.14],[245,116.2],[656,116.49],[667,116.53],[991,117.23],[658,117.39],[812,117.47],[992,117.78],[108,118.5],[993,118.57],[249,119.27],[994,119.71],[946,119.88]],"depth":50},{"n":46,"key":"Girls 10 & Under|100|Individual Medley","label":"Girls 10 & Under 100m IM","short":"100 IM","cl":"10&U pool","cut":105.62,"rows":[[252,90.39],[253,91.77],[276,91.87],[280,92.15],[257,93.34],[251,94.9],[254,96.58],[263,99.01],[259,99.31],[262,100.36],[264,101.09],[258,101.32],[278,101.91],[250,102.47],[256,102.73],[284,103.02],[668,104.08],[272,105.52],[277,105.54],[261,105.6],[266,105.61],[267,105.63],[265,105.83],[297,106.38],[292,106.79],[268,107.59],[672,108.87],[295,109.96],[947,110.38],[279,110.38],[823,110.53],[260,110.89],[299,111.75],[680,111.95],[291,112.4],[273,112.47],[827,112.62],[152,112.94],[669,113.78],[281,114.81],[950,115.28],[995,115.86],[677,116.17],[156,116.47],[996,116.63],[270,116.96],[826,117.17],[153,117.51],[825,117.52],[997,117.79]],"depth":50},{"n":47,"key":"Boys 11-12|100|Individual Medley","label":"Boys 11-12 100m IM","short":"100 IM","cl":"11-12","cut":87.78,"rows":[[300,71.4],[318,77.83],[302,78.44],[303,78.93],[684,79.18],[307,79.85],[309,80.06],[301,81.61],[312,81.94],[305,81.94],[311,82.2],[317,82.78],[310,82.97],[315,83.21],[331,83.58],[304,84.32],[319,84.85],[327,85.67],[314,86.21],[313,86.56],[335,86.89],[321,87.15],[323,87.77],[342,87.78],[326,88.52],[306,89.17],[324,89.23],[320,89.45],[686,90.26],[330,91.46],[316,91.79],[685,92.85],[688,93.82],[341,93.84],[339,93.98],[847,94.88],[336,94.91],[333,95.39],[344,95.42],[334,95.43],[694,95.58],[691,96.05],[954,96.46],[690,96.59],[322,96.71],[349,96.9],[343,96.91],[340,98.07],[692,98.68],[687,99.85]],"depth":50},{"n":48,"key":"Girls 11-12|100|Individual Medley","label":"Girls 11-12 100m IM","short":"100 IM","cl":"11-12","cut":87.41,"rows":[[351,73.58],[350,74.65],[353,75.93],[352,76.53],[354,76.84],[355,79.72],[363,80.44],[374,81.84],[361,82.34],[359,82.59],[364,83.33],[370,83.51],[360,83.56],[368,84.21],[356,84.26],[377,84.57],[365,84.81],[369,85.17],[357,85.18],[388,85.22],[362,85.9],[397,86.08],[358,86.59],[696,86.65],[702,86.85],[373,86.98],[697,88.0],[380,88.41],[396,88.44],[384,88.78],[394,90.52],[371,90.69],[704,90.96],[699,91.2],[395,91.66],[381,91.69],[379,91.69],[382,92.11],[366,92.32],[372,92.47],[392,92.77],[387,93.28],[378,93.41],[708,93.42],[855,93.47],[858,93.48],[964,93.78],[705,94.12],[398,94.19],[367,94.22]],"depth":50},{"n":49,"key":"Boys 13-14|100|Individual Medley","label":"Boys 13-14 100m IM","short":"100 IM","cl":"13-14","cut":73.35,"rows":[[400,67.16],[709,67.75],[401,67.78],[405,68.7],[407,68.79],[417,69.13],[710,69.19],[402,69.28],[408,69.44],[406,69.47],[412,70.11],[424,70.51],[403,70.72],[410,71.05],[421,71.59],[416,72.47],[404,72.62],[444,73.05],[418,73.33],[435,73.63],[420,74.13],[430,74.66],[419,74.94],[428,76.0],[425,76.18],[414,76.53],[415,77.9],[440,78.9],[413,79.2],[438,79.23],[445,79.36],[717,80.65],[433,80.83],[429,80.84],[714,81.55],[969,81.62],[715,81.63],[711,81.92],[442,82.01],[869,82.07],[716,82.16],[450,82.33],[870,82.41],[423,83.0],[713,83.07],[446,83.28],[878,83.31],[877,83.52],[432,83.69],[443,83.73]],"depth":50},{"n":50,"key":"Girls 13-14|100|Individual Medley","label":"Girls 13-14 100m IM","short":"100 IM","cl":"13-14","cut":81.07,"rows":[[453,71.94],[451,72.12],[464,73.92],[455,73.94],[456,74.78],[454,75.19],[485,76.3],[479,76.71],[457,76.74],[461,77.78],[452,78.07],[462,78.4],[725,79.1],[484,79.47],[473,80.0],[471,80.05],[458,80.41],[460,80.53],[497,80.57],[465,80.59],[459,80.6],[466,80.83],[491,81.57],[483,81.65],[478,81.78],[470,81.93],[477,82.07],[474,83.16],[463,83.41],[468,83.62],[730,84.09],[488,84.63],[496,84.85],[734,84.99],[495,85.66],[469,86.4],[494,86.44],[895,87.31],[467,87.55],[482,87.9],[733,88.19],[732,88.2],[499,88.38],[728,88.53],[880,88.53],[493,88.62],[977,88.8],[475,89.63],[727,89.79],[888,89.8]],"depth":50},{"n":51,"key":"Men 15-18|100|Individual Medley","label":"Men 15-18 100m IM","short":"100 IM","cl":"15-18","cut":72.53999999999999,"rows":[[502,62.6],[514,65.76],[509,66.09],[526,66.34],[740,66.85],[523,67.02],[536,67.35],[738,67.53],[505,67.87],[737,67.94],[520,69.0],[533,69.06],[544,69.24],[515,69.31],[528,69.88],[543,70.3],[521,70.44],[743,70.51],[519,70.88],[550,70.89],[511,70.95],[742,70.99],[525,71.02],[512,71.2],[532,71.34],[531,71.46],[904,71.54],[524,71.66],[745,71.68],[741,71.94],[538,72.15],[510,72.43],[527,72.53],[752,72.54],[537,72.94],[534,73.13],[902,73.23],[750,73.35],[529,73.4],[739,74.0],[542,74.13],[546,74.17],[517,74.37],[516,74.38],[508,74.78],[998,75.91],[903,76.26],[540,76.41],[749,76.47],[999,76.54]],"depth":50},{"n":52,"key":"Women 15-18|100|Individual Medley","label":"Women 15-18 100m IM","short":"100 IM","cl":"15-18","cut":82.81,"rows":[[753,68.89],[556,71.63],[555,72.5],[559,73.6],[553,74.34],[558,75.2],[566,75.39],[561,76.36],[563,76.5],[560,76.94],[757,77.1],[567,77.22],[564,77.25],[598,78.13],[579,78.21],[569,78.5],[562,78.64],[582,78.95],[594,79.07],[578,79.68],[581,79.81],[568,80.06],[591,80.21],[917,80.27],[755,80.41],[595,80.89],[599,81.13],[583,81.66],[756,81.81],[587,81.97],[593,82.05],[762,82.05],[585,82.09],[761,82.21],[570,82.21],[754,82.52],[759,82.69],[600,82.73],[572,82.79],[592,82.91],[576,83.2],[597,83.78],[766,84.09],[919,84.68],[596,84.72],[758,84.78],[921,84.8],[557,85.22],[590,85.44],[1000,85.47]],"depth":50}],"swimmers":[["Britt Joseph",6,"MOC","6&U","M"],["Wilson Kaden",6,"LLST","6&U","M"],["Hafeman Ryker",6,"MOC","6&U","M"],["Tsutskiridze George",6,"SRST","6&U","M"],["Phelps Luke",6,"EE","6&U","M"],["Frederick Nolan",6,"PCB","6&U","M"],["Agarwal Avyukt",6,"LVET","6&U","M"],["Oderkirk Rex",6,"KFS","6&U","M"],["Fettig Benjamin",6,"BP","6&U","M"],["Konko Ford",6,"PSSVA","6&U","M"],["Burns Vincent",5,"BP","6&U","M"],["Arich John",6,"STRAT","6&U","M"],["Mehra Rajveer",6,"LVET","6&U","M"],["Weins Paxton",6,"WSW","6&U","M"],["Garra Pio Raphael",6,"PCB","6&U","M"],["Ku Teagan",5,"BP","6&U","M"],["Richardson Bridger",6,"GFG","6&U","M"],["Brown Noah",6,"PCB","6&U","M"],["Campbell Miles",6,"EMM","6&U","M"],["Parks Landon",6,"MOC","6&U","M"],["Noh Benjamin",6,"LLST","6&U","M"],["Chaffee Benson",6,"WSW","6&U","M"],["Guinivan Dylan",6,"KFS","6&U","M"],["Goodwin Chase",6,"EE","6&U","M"],["Cawrse Austin",6,"EE","6&U","M"],["Silvestri John",6,"LDST","6&U","M"],["Berg Peter",6,"PCB","6&U","M"],["Davidson Reid",6,"TIDE","6&U","M"],["Dahl Holden",6,"PSSVA","6&U","M"],["Brown Braxton",6,"LDST","6&U","M"],["Williams Mitchell",6,"FPS","6&U","M"],["Ziegler Anthony",6,"MOC","6&U","M"],["Cappelli Leonardo",6,"PSSVA","6&U","M"],["Mitchell Reed",6,"WSW","6&U","M"],["Hansen Barrett",5,"WWNOR","6&U","M"],["Stewart Noah",6,"KFS","6&U","M"],["Christmas Cameron",6,"TIDE","6&U","M"],["Hidalgo Gabriel",6,"TFT","6&U","M"],["Marcialis Cooper",6,"MOC","6&U","M"],["Gorman Collin",5,"TBS","6&U","M"],["Archibald Ryan",6,"LLST","6&U","M"],["Hoffman Charles",6,"WSW","6&U","M"],["Stanton Easton",6,"EE","6&U","M"],["Mitchell Elias",6,"GFG","6&U","M"],["Hancher Hayes",6,"FPS","6&U","M"],["Rendon Cruz",6,"MOC","6&U","M"],["Bobby Ashton",5,"DFDR","6&U","M"],["Plassman August",5,"TBS","6&U","M"],["Mashaal Ethan",6,"ILE","6&U","M"],["Hehl Jack",6,"DFDR","6&U","M"],["Meyer Liberty",6,"EE","6&U","F"],["Soni Mila",6,"WWNOR","6&U","F"],["Juliano Maisie",6,"LLST","6&U","F"],["Hussain Aavya",6,"BBST","6&U","F"],["Zheng Evelyn",6,"BBST","6&U","F"],["Fennessy Blair",6,"LLST","6&U","F"],["Adamchak Lillian",6,"PCB","6&U","F"],["Wohlert Quinn",6,"WWNOR","6&U","F"],["Halavik Olivia",6,"WSW","6&U","F"],["Meleney Teagan",6,"WWNOR","6&U","F"],["Cicheskie Alice",6,"LV2","6&U","F"],["Johnson Evelyn",6,"WWNOR","6&U","F"],["Ulan Saylor",6,"WSW","6&U","F"],["Gauldin Anika",6,"STRAT","6&U","F"],["Zapata Olivia",6,"TIDE","6&U","F"],["O'Sullivan Caroline",6,"KFARK","6&U","F"],["Wohlert Chloe",6,"WWNOR","6&U","F"],["O'Hagan Emerson",6,"PSSVA","6&U","F"],["Charron Hanna",6,"LMM","6&U","F"],["Groleau Kamryn",6,"ILE","6&U","F"],["Irwin Fatima",6,"GFG","6&U","F"],["Kidd Caroline",6,"BP","6&U","F"],["Mahoney Keira",6,"SH","6&U","F"],["Farooq Jenna",6,"SRST","6&U","F"],["Giguere Taylor",6,"BP","6&U","F"],["Seward Lainey",5,"BP","6&U","F"],["Little Catherine",6,"WSW","6&U","F"],["Ramirez Olivia",6,"PCB","6&U","F"],["Zinck Hadley",6,"EMM","6&U","F"],["Pickett Jordana",6,"LRFRO","6&U","F"],["Shively Vera",6,"LRFRO","6&U","F"],["Triplett Harper",6,"TBS","6&U","F"],["Bayne Paityn",6,"FPS","6&U","F"],["Murphy McKenna",6,"PCB","6&U","F"],["Raynor Everly",6,"WWNOR","6&U","F"],["Schwee Hayden",6,"WWNOR","6&U","F"],["Baranowski Zoey",5,"MOC","6&U","F"],["Butler Eileigh",6,"TBS","6&U","F"],["Rabil Kate",6,"WWNOR","6&U","F"],["Ojeda Matilda",6,"LLST","6&U","F"],["Asselin Taylor",6,"MOC","6&U","F"],["Halici Ayla",6,"PCB","6&U","F"],["Fedorchak Rylee",5,"GFG","6&U","F"],["Malaty Selene",6,"LLST","6&U","F"],["Clem Rylie",6,"TFT","6&U","F"],["Isaac Emilia",6,"EE","6&U","F"],["Hickson Alivia",6,"PSSVA","6&U","F"],["Pandey Koel",6,"KFARK","6&U","F"],["Zogakis Victoria",6,"DFDR","6&U","F"],["Buck Brynnlee",5,"BBST","6&U","F"],["Dowling Levi",8,"BBST","8&U pool","M"],["Baranov Hordii",8,"EE","8&U pool","M"],["Amstutz Michael",8,"BP","8&U pool","M"],["Jordan, IV Phil",8,"WSW","8&U pool","M"],["Riley Luke",8,"PCB","8&U pool","M"],["Gorman Henry",8,"TBS","8&U pool","M"],["Lazisky Kurt",7,"DFDR","8&U pool","M"],["Seward Cole",8,"BP","8&U pool","M"],["Tam Everett",8,"BBST","8&U pool","M"],["Gheen Liam",7,"BP","8&U pool","M"],["Lewis Stevie",8,"WSW","8&U pool","M"],["Juliano Philip",8,"LLST","8&U pool","M"],["Raynes Graham",8,"PSSVA","8&U pool","M"],["Pemmaraju Reyaan",8,"LV2","8&U pool","M"],["Bergner Callahan",8,"KFS","8&U pool","M"],["Halici Aydin",8,"PCB","8&U pool","M"],["Smithson Dean",8,"WWNOR","8&U pool","M"],["Van Cise Reid",8,"GFG","8&U pool","M"],["Huke Miles",8,"WSW","8&U pool","M"],["Campbell Reed",8,"PCB","8&U pool","M"],["Truong Viet-Anh",8,"LMM","8&U pool","M"],["Wuthnow Thomas",8,"WWNOR","8&U pool","M"],["Clegg Shepard",8,"EE","8&U pool","M"],["Dawley Hudson",7,"BP","8&U pool","M"],["Bobby Landon",8,"DFDR","8&U pool","M"],["Chevalier Keegan",7,"GFG","8&U pool","M"],["Thomas Joshua",8,"EE","8&U pool","M"],["Lutz Bennett",7,"PCB","8&U pool","M"],["Maxwell Christian",8,"PSSVA","8&U pool","M"],["Ku Liam",8,"DFDR","8&U pool","M"],["Breinich Brady",8,"TIDE","8&U pool","M"],["Fiala Collin",8,"KFS","8&U pool","M"],["Koirala Arush",7,"LMM","8&U pool","M"],["Fettig Nathan",8,"BP","8&U pool","M"],["Litz Maxwell",8,"BBST","8&U pool","M"],["Phelps Henry",8,"EE","8&U pool","M"],["MARTINEZ DANIEL",8,"SRST","8&U pool","M"],["Romney Samuel",8,"PCB","8&U pool","M"],["Tesfaye Michael",8,"WSW","8&U pool","M"],["O'Sullivan Henry",8,"KFARK","8&U pool","M"],["Harris Beau",8,"WWNOR","8&U pool","M"],["Hoffman Nathaniel",8,"WSW","8&U pool","M"],["Damewood Henry",7,"FPS","8&U pool","M"],["Jost Callan",8,"TBS","8&U pool","M"],["Kwo Gerin",8,"PSSVA","8&U pool","M"],["Sovey Greyson",8,"MCMR","8&U pool","M"],["Muchard Levi",7,"LVET","8&U pool","M"],["Carter Mikah",8,"TBS","8&U pool","M"],["Anderson Finnick",8,"KFARK","8&U pool","M"],["Wilkinson Lucas",8,"DFDR","8&U pool","M"],["Soni Sophia",8,"WWNOR","8&U pool","F"],["Banas Finley",8,"WSW","8&U pool","F"],["Davis Aurora",8,"WSW","8&U pool","F"],["Johnson Eleanor",7,"WSW","8&U pool","F"],["Guerrina Savannah",8,"GFG","8&U pool","F"],["Miller Brynn",8,"PCB","8&U pool","F"],["Plunkett Ava",8,"TBS","8&U pool","F"],["Desch Kaya",8,"WWNOR","8&U pool","F"],["Malaty Juliette",8,"LLST","8&U pool","F"],["Farrow Tenley",8,"SH","8&U pool","F"],["Wu Wenjing",8,"TBS","8&U pool","F"],["Phelps Taylor",7,"WSW","8&U pool","F"],["Ojeda Blossom",8,"LLST","8&U pool","F"],["Chung Ellie",8,"WSW","8&U pool","F"],["Webb Payton",8,"SRST","8&U pool","F"],["Hall McKenna",8,"EE","8&U pool","F"],["Erickson Brooklyn",8,"PSSVA","8&U pool","F"],["Stapleford Alexandra",8,"TBS","8&U pool","F"],["Keefe Harper",8,"TBS","8&U pool","F"],["Fair Willoughby",8,"WSW","8&U pool","F"],["Larson Quinn",8,"PCB","8&U pool","F"],["Herr Raelynn",8,"ORCAS","8&U pool","F"],["Centerham Zaylia",8,"LLST","8&U pool","F"],["Garra Semira Eliana",8,"PCB","8&U pool","F"],["Alexander Julianna",8,"TIDE","8&U pool","F"],["Singh Naomi",8,"DFDR","8&U pool","F"],["Garrison Sadie",8,"WSW","8&U pool","F"],["Villena Isabella",8,"KFARK","8&U pool","F"],["Collins Cannon",8,"ORCAS","8&U pool","F"],["Dimitrov Elizabeth",8,"KFARK","8&U pool","F"],["Wilkinson Olivia",8,"KFS","8&U pool","F"],["Geyer Mackenzie",7,"BP","8&U pool","F"],["Williams Harley",8,"ORCAS","8&U pool","F"],["Horner Emery",8,"ORCAS","8&U pool","F"],["McInerney Katherine",8,"DFDR","8&U pool","F"],["Fallah Olivia",8,"LMM","8&U pool","F"],["Corle Harper",8,"FPS","8&U pool","F"],["Plassman Philippa",8,"TBS","8&U pool","F"],["Santamaria Daniela",8,"KFS","8&U pool","F"],["Matheos Penelope",8,"BP","8&U pool","F"],["Ehmann Reese",7,"WWNOR","8&U pool","F"],["Patten Saylor",7,"SH","8&U pool","F"],["Patena Sophia",8,"ILE","8&U pool","F"],["Lee Isabel",7,"KFARK","8&U pool","F"],["Hansen Avery",8,"WWNOR","8&U pool","F"],["Ralston Julia",7,"STRAT","8&U pool","F"],["Ahmed Nora",8,"WWNOR","8&U pool","F"],["Callanan Brynn",7,"BP","8&U pool","F"],["Jennings Kara",8,"WSW","8&U pool","F"],["Toro Sutton",7,"TFT","8&U pool","F"],["Beichner Everett",10,"WWNOR","10&U pool","M"],["Happeny Quincy",10,"LDST","10&U pool","M"],["Wu Leo",10,"BP","10&U pool","M"],["Gibney Max",9,"BP","10&U pool","M"],["Goddard John",10,"EE","10&U pool","M"],["Richter Tyler",10,"PCB","10&U pool","M"],["Raynes Benjamin",10,"PSSVA","10&U pool","M"],["Hamdaoui Noah",10,"KFARK","10&U pool","M"],["Noweder Christian",9,"LMM","10&U pool","M"],["Jithesh Vivaan",10,"DFDR","10&U pool","M"],["Nichols Lincoln",10,"EMM","10&U pool","M"],["Blank Beckett",9,"WSW","10&U pool","M"],["Cappellano John",10,"BBST","10&U pool","M"],["O'Sullivan George",10,"KFARK","10&U pool","M"],["Soni Kieran",10,"WWNOR","10&U pool","M"],["Oei Caden",10,"WWNOR","10&U pool","M"],["Mahon Chase",10,"EMM","10&U pool","M"],["Lose Fletcher",10,"FPS","10&U pool","M"],["Short Alexander",10,"LMM","10&U pool","M"],["Garrison Timothy",9,"FPS","10&U pool","M"],["Ku Taylor",9,"BP","10&U pool","M"],["Landreth Kai",9,"BBST","10&U pool","M"],["Stambaugh Samuel",10,"LDST","10&U pool","M"],["Colello Brennan Matthew",9,"TIDE","10&U pool","M"],["Fries David",10,"SH","10&U pool","M"],["O'Rourke Tiernan",10,"FPS","10&U pool","M"],["Maxwell Caleb",10,"PSSVA","10&U pool","M"],["Tampubolon Sammy",9,"PSSVA","10&U pool","M"],["Orton Oliver",10,"PCB","10&U pool","M"],["Jeffries Nolan",10,"BP","10&U pool","M"],["Benites Jesse",10,"PCB","10&U pool","M"],["Harrison Ford",10,"MOC","10&U pool","M"],["Koontz Jonah",10,"BP","10&U pool","M"],["Litvinovitch Rowan",10,"PSSVA","10&U pool","M"],["Thompson Cole",10,"LRFRO","10&U pool","M"],["Bhatt Pranav",9,"TBS","10&U pool","M"],["Corle Oliver",10,"FPS","10&U pool","M"],["Panchamia Viaan",10,"BBST","10&U pool","M"],["Tinger Brennen",10,"FPS","10&U pool","M"],["Adamchak Tanner",9,"PCB","10&U pool","M"],["Rhodes Bennett",10,"WSW","10&U pool","M"],["Johnson Gregor",10,"ILE","10&U pool","M"],["Lee Travis",9,"SRST","10&U pool","M"],["Burns Robert",9,"WWNOR","10&U pool","M"],["Weatherton Jack",9,"LLST","10&U pool","M"],["Ritter Greyson",10,"SH","10&U pool","M"],["Plassman Leo",10,"TBS","10&U pool","M"],["Garrison Beck",10,"WSW","10&U pool","M"],["Mahoney Joshua",10,"FPS","10&U pool","M"],["Marchisello Griffin",10,"ILE","10&U pool","M"],["Kowalska Alicja",10,"ORCAS","10&U pool","F"],["Horner Mckenzie",10,"ORCAS","10&U pool","F"],["Cullen Waverly",10,"ILE","10&U pool","F"],["Sverchek Josephine",10,"PCB","10&U pool","F"],["Johnson Kennedy",10,"LVET","10&U pool","F"],["Ojeda Olive",10,"LLST","10&U pool","F"],["Giguere Madison",9,"BP","10&U pool","F"],["Egger Aeris",10,"LDST","10&U pool","F"],["Burton Brooke",10,"BP","10&U pool","F"],["Le Tuyet-Lan",10,"LV2","10&U pool","F"],["Patrick Madelyn",10,"SRST","10&U pool","F"],["Hong Aubrey",9,"WWNOR","10&U pool","F"],["Chami Leah",10,"TIDE","10&U pool","F"],["Thomas Naomi",10,"SRST","10&U pool","F"],["Bahsoon Mila",9,"KFS","10&U pool","F"],["Katada Tara",10,"HUR","10&U pool","F"],["Stanley Brianna",10,"KFS","10&U pool","F"],["Barton Reese",10,"DFDR","10&U pool","F"],["Flanagan Emily",9,"WWNOR","10&U pool","F"],["White Averi",10,"KFS","10&U pool","F"],["Naquin Jordan",9,"DFDR","10&U pool","F"],["Dedhia Hazel",10,"WSW","10&U pool","F"],["Rey Layla",10,"BBST","10&U pool","F"],["Salvetti Sophie",10,"WWNOR","10&U pool","F"],["Foster Emma",10,"TBS","10&U pool","F"],["Portillo Jennifer",10,"KFARK","10&U pool","F"],["Camet Yzabella Grace",10,"KFARK","10&U pool","F"],["Ulan Addison",9,"WSW","10&U pool","F"],["Meyer Lincoln",9,"EE","10&U pool","F"],["Jackson MaryJane",10,"TFT","10&U pool","F"],["Keetch Grace",10,"LLST","10&U pool","F"],["Wilson Everly",10,"WSW","10&U pool","F"],["Clegg Eleanor",10,"EE","10&U pool","F"],["Mauritz Sophia",10,"SH","10&U pool","F"],["Niyazov Yasin",10,"SRST","10&U pool","F"],["Amstutz Juliet",9,"BP","10&U pool","F"],["Abou Darwiche Leia",10,"SRST","10&U pool","F"],["Daniels Olivia",10,"SRST","10&U pool","F"],["Eastman Olivia",10,"SRST","10&U pool","F"],["Jenkins Isabela",10,"LMM","10&U pool","F"],["Venson Naomi",10,"MCMR","10&U pool","F"],["Newell Ellisyn",9,"TBS","10&U pool","F"],["Larson Charlotte",10,"DFDR","10&U pool","F"],["Rebello Serena",9,"BP","10&U pool","F"],["Statton Adrienne",10,"ORCAS","10&U pool","F"],["Lightner Callie",10,"FPS","10&U pool","F"],["Kidd Elizabeth",9,"BP","10&U pool","F"],["Hall Emory",10,"WSW","10&U pool","F"],["Kellenberger Quinn",10,"FPS","10&U pool","F"],["Griffith Emma",10,"BP","10&U pool","F"],["Tejada Marco",12,"WSW","11-12","M"],["Ku Tristan",12,"BP","11-12","M"],["Norcross Logan",12,"BBST","11-12","M"],["MARTINEZ DYLAN",12,"SRST","11-12","M"],["Shinbara Jackson",12,"PSSVA","11-12","M"],["Harlan Isaac",12,"GFG","11-12","M"],["Amstutz Christian",12,"BP","11-12","M"],["Samra Nathan",11,"WWNOR","11-12","M"],["Lincoln David",12,"GFG","11-12","M"],["Norcross Liam",12,"BBST","11-12","M"],["Reeder Seth",12,"LRFRO","11-12","M"],["Fair Wilkes",12,"WSW","11-12","M"],["Torsell Jackson",12,"ILE","11-12","M"],["Gehrmann Nikolaus",12,"SH","11-12","M"],["Radzhabov Mansour",11,"ILE","11-12","M"],["Moores Henry",11,"KFARK","11-12","M"],["Erickson Brody",11,"PSSVA","11-12","M"],["Holdorf Greyson",12,"WWNOR","11-12","M"],["Dew Brayden",12,"WSW","11-12","M"],["Roberts Tiberius",11,"ILE","11-12","M"],["Schmidt Matthew",12,"WWNOR","11-12","M"],["Kirsch William",12,"LDST","11-12","M"],["Roberts-Shaw Michael",12,"FPS","11-12","M"],["Yankoupe Roger",12,"EE","11-12","M"],["Torres Nicholas",12,"LRFRO","11-12","M"],["Gross Luke",11,"MOC","11-12","M"],["Carmakal Jay",11,"WWNOR","11-12","M"],["Chung Jacob",12,"WSW","11-12","M"],["Mays Hayden",12,"FPS","11-12","M"],["Wight Caleb",12,"SRST","11-12","M"],["House Grant",12,"LDST","11-12","M"],["Eubank Benjamin",11,"KFARK","11-12","M"],["Richter Brady",12,"PCB","11-12","M"],["Halfhill Oliver",11,"DFDR","11-12","M"],["Zinck Whitaker",11,"EMM","11-12","M"],["Lazisky Dean",11,"DFDR","11-12","M"],["Nam Jonathan",12,"LMM","11-12","M"],["Hall Benjamin",12,"BP","11-12","M"],["Mitchell Timothy",11,"TIDE","11-12","M"],["Lansdowne Devin",12,"LDST","11-12","M"],["Dowling Grayson",11,"BBST","11-12","M"],["Le Kyden",12,"DFDR","11-12","M"],["Blanks Charles",11,"SH","11-12","M"],["Forster Blake",12,"DFDR","11-12","M"],["Akagi Daniel",12,"KFS","11-12","M"],["Hedrick-McCarthy Cooper",12,"KFS","11-12","M"],["Sanabria Juan",12,"TFT","11-12","M"],["Kaine Sullivan",11,"GFG","11-12","M"],["Creigh Noah",12,"TBS","11-12","M"],["McInerney Luke",12,"DFDR","11-12","M"],["Esguerra Rhian Alexandra",12,"TFT","11-12","F"],["Dalton Brooklyn",12,"FPS","11-12","F"],["Franks Cambree",12,"WWNOR","11-12","F"],["Harrison Collins",12,"MOC","11-12","F"],["Johnson Lauren",12,"PCB","11-12","F"],["Lam Ella",12,"WWNOR","11-12","F"],["Petrak Eliza",12,"LLST","11-12","F"],["Liu Olivia",12,"SRST","11-12","F"],["Noweder Anna",12,"LMM","11-12","F"],["Evankovich Avery",11,"SRST","11-12","F"],["Hernandez Rylee",12,"FPS","11-12","F"],["Jelinek Lauren",12,"WSW","11-12","F"],["Nguyen Alice",11,"ORCAS","11-12","F"],["Chen Christal",11,"KFARK","11-12","F"],["Mogollon Rachel",12,"DFDR","11-12","F"],["Musni Trisha",12,"LV2","11-12","F"],["Amstutz Theresa",11,"BP","11-12","F"],["DeFiore Brooke",12,"EMM","11-12","F"],["Lach Zara",12,"WWNOR","11-12","F"],["Gonzalez Emily",12,"FPS","11-12","F"],["Lippman Elena",11,"BBST","11-12","F"],["Wilkerson Leia",11,"KFS","11-12","F"],["Smithson Vivian",11,"WWNOR","11-12","F"],["Brown Annabelle",12,"WWNOR","11-12","F"],["Wiesbauer Amelie",11,"WSW","11-12","F"],["Zajc Evelyn",12,"BP","11-12","F"],["Adams Rachel",12,"TBS","11-12","F"],["Flanagan Nora",12,"WWNOR","11-12","F"],["Hess Isabelle",12,"SRST","11-12","F"],["Amodio Gia",11,"FPS","11-12","F"],["Bayne Paisley",12,"FPS","11-12","F"],["Mishra Aneira",12,"WWNOR","11-12","F"],["Duenas Genesis",11,"ILE","11-12","F"],["Kanumilli Anika",11,"WWNOR","11-12","F"],["Asselin Teagan",11,"MOC","11-12","F"],["Zawacki Emilia",12,"FPS","11-12","F"],["Lee Zara",12,"MCMR","11-12","F"],["Zawistowski Mara",11,"LV2","11-12","F"],["Jordan Anna",11,"WSW","11-12","F"],["Wiese Jane",12,"GFG","11-12","F"],["Mottet Catherine",12,"MOC","11-12","F"],["Sullivan Lila-Elyse",11,"KFS","11-12","F"],["Laurenzi Avery",11,"WSW","11-12","F"],["salvetti scarlett",12,"WWNOR","11-12","F"],["Moazzez Quinn",11,"BP","11-12","F"],["Vergara Avielle",12,"TFT","11-12","F"],["Arich Gabriela",11,"STRAT","11-12","F"],["Oei Adalyn",11,"WWNOR","11-12","F"],["Chong Caitlyn",11,"BBST","11-12","F"],["Chami Sheli",11,"TIDE","11-12","F"],["Lin Logan",13,"BP","13-14","M"],["Goddard Samuel",14,"EE","13-14","M"],["Chiranjeevi Aadi",14,"LVET","13-14","M"],["Gehrmann Henning",14,"SH","13-14","M"],["Orton Owen",14,"PCB","13-14","M"],["Kim Aden",13,"DFDR","13-14","M"],["salvetti sebastian",14,"WWNOR","13-14","M"],["Jenkins Silas",13,"KFARK","13-14","M"],["Toner Liam",13,"BBST","13-14","M"],["Snowden William",14,"TFT","13-14","M"],["Monarch Lucas",13,"LDST","13-14","M"],["Nerangis Bert",13,"WSW","13-14","M"],["House Caleb",14,"LDST","13-14","M"],["Fletcher Aiden",13,"LLST","13-14","M"],["Schlagheck Bodie",14,"WSW","13-14","M"],["Kanumilli Abhinav",14,"WWNOR","13-14","M"],["Rabe Brandon",13,"WWNOR","13-14","M"],["Lee Joseph",14,"BP","13-14","M"],["Horner Colton",14,"ORCAS","13-14","M"],["Lach Ronan",14,"WWNOR","13-14","M"],["Fair Weston",14,"WSW","13-14","M"],["Abughrara Yusef",14,"LMM","13-14","M"],["Cheong Ilamson",14,"LVET","13-14","M"],["Moazzez Joseph",14,"BP","13-14","M"],["Windust Sebastian",14,"BP","13-14","M"],["Barrientos Gabriel",14,"LV2","13-14","M"],["Meedel Chase",14,"FPS","13-14","M"],["Batac Jeremiah Jr",14,"LV2","13-14","M"],["Lane Carson",13,"BBST","13-14","M"],["Hickey Finn",13,"WWNOR","13-14","M"],["Wadhwani Shaurya",14,"LV2","13-14","M"],["Poola Hashvik Sai",14,"SRST","13-14","M"],["Fox Cameron",14,"ILE","13-14","M"],["Blank Anderson",13,"WSW","13-14","M"],["Lash Oliver",13,"DFDR","13-14","M"],["Henderson Alexander",14,"BP","13-14","M"],["Irwin Micah",13,"GFG","13-14","M"],["Biswas Aryan",13,"BBST","13-14","M"],["Pujari Rishaan",14,"BP","13-14","M"],["Yun Cian",13,"MCMR","13-14","M"],["Thomas Griffin",13,"EE","13-14","M"],["Beal Elijah",13,"PCB","13-14","M"],["Breinich Colby",13,"TIDE","13-14","M"],["Duffy Liam",13,"WWNOR","13-14","M"],["Gaddi Ryan",14,"BP","13-14","M"],["Mallin John",13,"FPS","13-14","M"],["Blaine Tyler",14,"WSW","13-14","M"],["Mirick Casey",13,"BP","13-14","M"],["maley matthew",14,"TFT","13-14","M"],["Pandya Anik",14,"BP","13-14","M"],["Vierkorn Jonathan",14,"KFS","13-14","M"],["McAtee Tenley",14,"LVET","13-14","F"],["Brenner Ellie",14,"BP","13-14","F"],["Foley Siena",14,"LLST","13-14","F"],["Routman Emma",13,"LLST","13-14","F"],["Roy Shifanjali",14,"WWNOR","13-14","F"],["Hall Tatum",13,"WSW","13-14","F"],["Cushman Addison",14,"WSW","13-14","F"],["Collucci Kendall",14,"WSW","13-14","F"],["Muchard Paige",13,"LVET","13-14","F"],["Torres Gabriela",14,"LRFRO","13-14","F"],["Dodd Lelia",14,"STRAT","13-14","F"],["Black Summer",14,"TBS","13-14","F"],["Bloom Madison",13,"FPS","13-14","F"],["Kasten Emerald",13,"ORCAS","13-14","F"],["Weber Katherine",14,"LV2","13-14","F"],["Talton Kathryn",14,"EMM","13-14","F"],["Metts Sydney",14,"BP","13-14","F"],["dixon faith",14,"TBS","13-14","F"],["Farmer Payton",13,"GFG","13-14","F"],["Giang Aileen",14,"TBS","13-14","F"],["Fiala Caraline",13,"KFS","13-14","F"],["Lortie Josephine",14,"TBS","13-14","F"],["Pangera Samanvi",14,"HUR","13-14","F"],["Jacks Ellie",13,"KFARK","13-14","F"],["Garwacki Brooklyn",13,"HUR","13-14","F"],["Mulford Emilia",14,"BBST","13-14","F"],["Orton Olivia",13,"PCB","13-14","F"],["Khanal Kavya",14,"LV2","13-14","F"],["Wong Arianna",13,"SRST","13-14","F"],["Murphy Evangeline",14,"LLST","13-14","F"],["Alcancia Alivia",13,"LMM","13-14","F"],["Lang Olivia",13,"BP","13-14","F"],["Le Tuyet-Mai",13,"LV2","13-14","F"],["Wiesbauer Sophia",14,"WSW","13-14","F"],["Franks Keeley",14,"WWNOR","13-14","F"],["Swartz Julia",14,"ILE","13-14","F"],["Hymel Reese",13,"TIDE","13-14","F"],["Gemberling Olivia",14,"KFS","13-14","F"],["Tracy Claire",14,"SH","13-14","F"],["Tapia Liliana",14,"BP","13-14","F"],["Dubert Abigail",14,"BP","13-14","F"],["Day Kathryn",14,"BP","13-14","F"],["DeFiore Cassandra",14,"EMM","13-14","F"],["Albrecht Koa",13,"WWNOR","13-14","F"],["Patel Priya",13,"ILE","13-14","F"],["Gilmore Emma",14,"LLST","13-14","F"],["Choi Kamryn",13,"BBST","13-14","F"],["Brown Ana",13,"LDST","13-14","F"],["Ducote Mackenzie",14,"WSW","13-14","F"],["Thompson Brynn",14,"LRFRO","13-14","F"],["Pham Lucas",18,"LLST","15-18","M"],["Wergley Cole",18,"SRST","15-18","M"],["Rabe Chase",17,"WWNOR","15-18","M"],["Camet Caleb Josh",17,"KFARK","15-18","M"],["Lechelt Fritz",16,"STRAT","15-18","M"],["Levin Ty",15,"PSSVA","15-18","M"],["Sexton Allen",17,"TBS","15-18","M"],["Wahlquist Brayden",17,"BBST","15-18","M"],["Nguyen Giang",16,"BP","15-18","M"],["Abbineni Yogi",16,"WWNOR","15-18","M"],["Griffin William",18,"BBST","15-18","M"],["Finke William Patrick",18,"TIDE","15-18","M"],["Tragle Harrison",17,"LLST","15-18","M"],["Bultema Tyler",16,"LVET","15-18","M"],["Akers Eric",18,"GFG","15-18","M"],["Clegg Kent",16,"MOC","15-18","M"],["Leiden Evan",17,"SH","15-18","M"],["Vierkorn George",16,"KFS","15-18","M"],["Probst John",16,"EE","15-18","M"],["Mills Jack",17,"EMM","15-18","M"],["Bell Zachary",18,"EMM","15-18","M"],["Cather Aaron",15,"BP","15-18","M"],["Mollerup Owen",17,"SRST","15-18","M"],["White Jolyon",18,"PSSVA","15-18","M"],["Thompson Peyton",18,"DFDR","15-18","M"],["Heise Hayes",15,"WWNOR","15-18","M"],["Seelam Aarush",17,"LV2","15-18","M"],["Lukin Myroslav",18,"PCB","15-18","M"],["Olorunda David",18,"TBS","15-18","M"],["Ahedo Julen",17,"EMM","15-18","M"],["Neumiller Benjamin",16,"ILE","15-18","M"],["Hickey Shane",15,"WWNOR","15-18","M"],["Xiao Daniel",16,"LV2","15-18","M"],["Mistry Nikhil",15,"WWNOR","15-18","M"],["Staton Ryder",15,"FPS","15-18","M"],["Rebich Peter",18,"TBS","15-18","M"],["Sebelist Aiden",16,"MCMR","15-18","M"],["MAKAREVYCH YEGOR",17,"PCB","15-18","M"],["Spalding Caden",18,"WSW","15-18","M"],["Blair Wyatt",18,"LLST","15-18","M"],["Mulford Owen",16,"BBST","15-18","M"],["Leiva Mathias",18,"STRAT","15-18","M"],["Gonzalez Jonathan",15,"WWNOR","15-18","M"],["Cather Eli",17,"BP","15-18","M"],["Bultema Connor",18,"LVET","15-18","M"],["Tirri Samuel",15,"BBST","15-18","M"],["Rommelmeyer William",18,"GFG","15-18","M"],["Hall Cormick",16,"WSW","15-18","M"],["Lee Mark",16,"MCMR","15-18","M"],["Mollerup Landon",15,"SRST","15-18","M"],["Cortez-Martinez Ariana",16,"WSW","15-18","F"],["Kilty Caroline",18,"BP","15-18","F"],["Rabe Skylar",15,"WWNOR","15-18","F"],["Thaivalappil Maya",17,"SRST","15-18","F"],["Roy Aishwarya",16,"WWNOR","15-18","F"],["Cates Noelle",16,"FPS","15-18","F"],["Foley Kate",18,"LRFRO","15-18","F"],["Fracasso Sophia",16,"LVET","15-18","F"],["Nguyen Dan",16,"BP","15-18","F"],["Burton Avery",15,"BP","15-18","F"],["Boyle Isabelle",16,"MOC","15-18","F"],["Rodgers Lilyan",15,"FPS","15-18","F"],["Ngo Nhi",17,"LV2","15-18","F"],["Coelho Melissa",17,"LLST","15-18","F"],["Nishiyama Taylor",16,"FPS","15-18","F"],["Thai Natalie",17,"BBST","15-18","F"],["Trinh Teralynn",16,"KFARK","15-18","F"],["Farmer Morgan",15,"GFG","15-18","F"],["Deza Micaela",17,"LMM","15-18","F"],["McAtee Keely",17,"LVET","15-18","F"],["Sonnenfeld Madeline",15,"BP","15-18","F"],["Bell Olivia",16,"EMM","15-18","F"],["Hwang Emma",15,"KFARK","15-18","F"],["Vizcaino Lyra",16,"MOC","15-18","F"],["Hwang Reese",18,"WSW","15-18","F"],["Bell Addison",15,"EMM","15-18","F"],["Harms Sullivan",17,"PCB","15-18","F"],["Moore Catherine",15,"BP","15-18","F"],["Byers Caitlyn",17,"LDST","15-18","F"],["Duggan Charlotte",17,"TBS","15-18","F"],["Daniels Victoria",15,"SRST","15-18","F"],["Musni Adriana",16,"LV2","15-18","F"],["Campbell Nora",15,"LDST","15-18","F"],["Roberts-Shaw Myliah",17,"FPS","15-18","F"],["Cornell Rebecca",17,"SRST","15-18","F"],["Finke Lucy",17,"TIDE","15-18","F"],["Madan Naya",15,"WWNOR","15-18","F"],["Foote Kathleen",16,"STRAT","15-18","F"],["Wakefield Mikaela",15,"STRAT","15-18","F"],["Patki Aria",15,"BBST","15-18","F"],["Sparbanie Elizabeth",16,"LDST","15-18","F"],["Beal Lucy",15,"PCB","15-18","F"],["Penetrante Leia Marie",15,"SRST","15-18","F"],["Nolton Lena",15,"WWNOR","15-18","F"],["Tansey Willa",17,"PSSVA","15-18","F"],["Bates Naomi",17,"ILE","15-18","F"],["Sabetto Harper",17,"BBST","15-18","F"],["Cadd Sophie",16,"LLST","15-18","F"],["Yang Elizabeth",17,"KFARK","15-18","F"],["Karg Emma",17,"PCB","15-18","F"],["Nelsen Eli",6,"LVET","6&U","M"],["Khan Rayan",6,"HUR","6&U","M"],["Jackson Albert",6,"TBS","6&U","M"],["Arora Kabir",6,"KFARK","6&U","M"],["Corbett Connor",6,"BBST","6&U","M"],["McCullough Trevor",6,"EMM","6&U","M"],["Vachher Henry",6,"BP","6&U","M"],["Zembriski Landon",6,"FPS","6&U","M"],["Bludau William",5,"WSW","6&U","M"],["McCormack Robert",6,"LDST","6&U","M"],["Van Cise Parker",5,"GFG","6&U","M"],["White Riley",6,"EMM","6&U","F"],["Lubore Ripley",5,"EE","6&U","F"],["Wu Weiyi",5,"TBS","6&U","F"],["Traylor Zoey",6,"MOC","6&U","F"],["Chapple Heider",6,"GFG","6&U","F"],["Jelinek Madeleine",5,"WSW","6&U","F"],["Tolub Morgan",6,"LLST","6&U","F"],["Chambers Scarlett",6,"PSSVA","6&U","F"],["Hale Anna",6,"LVET","6&U","F"],["Hale Faith",6,"PSSVA","6&U","F"],["Ferrara Madison",6,"LRFRO","6&U","F"],["Miller Adrienne",5,"PCB","6&U","F"],["Alexander Sara",6,"FPS","6&U","F"],["Guzdowski Joshua",8,"TBS","8&U pool","M"],["Generazio Graham",8,"SH","8&U pool","M"],["Glenn Aidan",8,"LLST","8&U pool","M"],["Zimmerman Argio",7,"TBS","8&U pool","M"],["Pumphrey Spilman",7,"EE","8&U pool","M"],["Virgo Jack",8,"BBST","8&U pool","M"],["Boardman Peter",8,"EE","8&U pool","M"],["Burris Calixto",8,"ORCAS","8&U pool","M"],["Darno Blake",7,"WSW","8&U pool","M"],["Reddy Elan",7,"WSW","8&U pool","M"],["Gonzalez Ethan",8,"FPS","8&U pool","M"],["Sverchek Nicholas",7,"PCB","8&U pool","M"],["Lee Archer",7,"WSW","8&U pool","M"],["Boyle Dylan",8,"FPS","8&U pool","F"],["Senkowski Lillian",8,"EMM","8&U pool","F"],["Marshall Amelia",7,"EMM","8&U pool","F"],["Nakovich Claire",8,"LLST","8&U pool","F"],["Jung Zoe",8,"ORCAS","8&U pool","F"],["Morris Piper",8,"EMM","8&U pool","F"],["Gerundo Juliette",8,"PSSVA","8&U pool","F"],["Thomas Maisie",7,"LMM","8&U pool","F"],["Brodfuehrer Ayla",7,"KFS","8&U pool","F"],["Gallagher Isla",7,"PSSVA","8&U pool","F"],["Hawatmeh Eliana",8,"DFDR","8&U pool","F"],["Daniels Vivienne",8,"ILE","8&U pool","F"],["Radzhabova Lola",7,"ILE","8&U pool","F"],["Schelske Maeve",8,"PCB","8&U pool","F"],["Singh Kumar Sahil",9,"BP","10&U pool","M"],["Patel-Pingat Kabir",10,"LVET","10&U pool","M"],["Fritz Connor",9,"BP","10&U pool","M"],["Patterson Noah",9,"WSW","10&U pool","M"],["Kowalczyk Alexander",10,"ILE","10&U pool","M"],["Singh Kumar Sanjay",9,"BP","10&U pool","M"],["Miller Isaac",9,"LDST","10&U pool","M"],["Sereno Keegan",10,"WWNOR","10&U pool","M"],["Guzdowski Lucas",10,"TBS","10&U pool","M"],["Baldock Dominick",9,"BBST","10&U pool","M"],["Fair Whitaker",10,"WSW","10&U pool","M"],["Blanks John",10,"SH","10&U pool","M"],["O'Hagan Caden",9,"PSSVA","10&U pool","M"],["Hanna Matthew",10,"LLST","10&U pool","M"],["Mosher Declan",9,"FPS","10&U pool","M"],["Harlan Drake",9,"GFG","10&U pool","M"],["Johnson Caroline",9,"WSW","10&U pool","F"],["Juarez Sydney",9,"WSW","10&U pool","F"],["Batra Bhavika",10,"BBST","10&U pool","F"],["Maza Reyes Miranda",9,"ILE","10&U pool","F"],["Liao Cheryl",9,"ORCAS","10&U pool","F"],["Sudhakar Malini",10,"KFARK","10&U pool","F"],["Haugen Olivia",10,"KFARK","10&U pool","F"],["Fens Olivia",10,"MOC","10&U pool","F"],["Heffron Savannah",10,"BP","10&U pool","F"],["Kenny Layla",9,"SH","10&U pool","F"],["Reinhardt Aurora",10,"BP","10&U pool","F"],["Marsh Macie",9,"STRAT","10&U pool","F"],["Holdorf Quinlyn",10,"WWNOR","10&U pool","F"],["Ward Eloise",10,"LLST","10&U pool","F"],["Burd Rowan",9,"TIDE","10&U pool","F"],["Revelle Anne",10,"WWNOR","10&U pool","F"],["Soundappan Tristan",11,"SRST","11-12","M"],["Singh Eshaan",12,"DFDR","11-12","M"],["Garikapati Rana",12,"KFARK","11-12","M"],["Albrecht Ace",11,"WWNOR","11-12","M"],["Albrecht Atticus",11,"WWNOR","11-12","M"],["Robertson Alexander",12,"LLST","11-12","M"],["Romney Benjamin",12,"PCB","11-12","M"],["Tam Weston",12,"BBST","11-12","M"],["Happeny Vaughn",12,"LDST","11-12","M"],["Agrawal Reyansh",11,"LVET","11-12","M"],["Wellet Charles",11,"PSSVA","11-12","M"],["Jiang Edwin",12,"BP","11-12","M"],["DeVoe Reagan",11,"WWNOR","11-12","F"],["Wu Wanmin",11,"TBS","11-12","F"],["Giroux Genevieve",12,"BBST","11-12","F"],["Wagner Ava",11,"LMM","11-12","F"],["Gaither Paisley",12,"WSW","11-12","F"],["Alfredo Mila",12,"TBS","11-12","F"],["Byers Anna",11,"LDST","11-12","F"],["Sexton Delaney",12,"TBS","11-12","F"],["Whelband Eleanor",11,"LDST","11-12","F"],["Griffith Olivia",12,"BP","11-12","F"],["Seelam Ridhi",12,"LV2","11-12","F"],["Ku Abigail",11,"DFDR","11-12","F"],["Lee Eunice",11,"SRST","11-12","F"],["Medina Angelo",14,"WWNOR","13-14","M"],["Soundappan Jayden",14,"SRST","13-14","M"],["Stambaugh Jennings",13,"LDST","13-14","M"],["Martini Parker",14,"PCB","13-14","M"],["Sparbanie Anthony",14,"LDST","13-14","M"],["Amaya Cristiano",13,"SRST","13-14","M"],["Wygal Harrison",14,"LLST","13-14","M"],["Edwards Cole",14,"MOC","13-14","M"],["Carter Jackson",14,"TBS","13-14","M"],["Gibney Andrew",13,"BP","13-14","M"],["Kumar Reyansh",13,"KFARK","13-14","M"],["Robinson Urijah",14,"LDST","13-14","M"],["Saraiya Kiaan",14,"WWNOR","13-14","M"],["Forgas William Cole",14,"TIDE","13-14","M"],["Wilson Vaughn",13,"PSSVA","13-14","M"],["Cerar Everett",14,"LMM","13-14","M"],["Supan Mila",13,"KFARK","13-14","F"],["Julien Paige",14,"ILE","13-14","F"],["Allday Harper",14,"WWNOR","13-14","F"],["Kaplan Angela",13,"KFS","13-14","F"],["Chachu Desta",14,"DFDR","13-14","F"],["Thompson Helen Grace",13,"PCB","13-14","F"],["Polyak Leah",14,"FPS","13-14","F"],["Lazisky Evelyn",13,"DFDR","13-14","F"],["Chicas Maria",13,"EE","13-14","F"],["Magurn Elizabeth",13,"FPS","13-14","F"],["Ramey Madeline",13,"BBST","13-14","F"],["Kollman Hayden",14,"MOC","13-14","F"],["Gaddi Landon",16,"BP","15-18","M"],["Rowley Jake",18,"BBST","15-18","M"],["Taylor Christopher",16,"LMM","15-18","M"],["Hannett Gavin",15,"KFARK","15-18","M"],["Behera Shreyansh",15,"LMM","15-18","M"],["Wood Jaxon",17,"PSSVA","15-18","M"],["Cornell Andrew",15,"SRST","15-18","M"],["Nam Justin",15,"LMM","15-18","M"],["Duffy Connor",16,"WWNOR","15-18","M"],["Rowley Nate",16,"BBST","15-18","M"],["Huggup Carter",15,"LDST","15-18","M"],["Buras John",15,"LDST","15-18","M"],["Prasad Devan",15,"HUR","15-18","M"],["Wassvik Colin",16,"LVET","15-18","M"],["McCowen Nicholas",16,"LLST","15-18","M"],["Kimmel Ethan",15,"BP","15-18","M"],["Cushman McKinley",16,"WSW","15-18","F"],["Foley Sydney",15,"LLST","15-18","F"],["Mogollon Lindsey",15,"DFDR","15-18","F"],["Tjader Rylee",16,"GFG","15-18","F"],["Takach Alexandra",17,"LV2","15-18","F"],["Baker Ella",15,"PSSVA","15-18","F"],["Sadowski Emili",15,"WSW","15-18","F"],["McKevitt Brynn",17,"ILE","15-18","F"],["Brougham Addison",17,"TIDE","15-18","F"],["Byrne Lily",17,"BP","15-18","F"],["Waldron Linleigh",16,"LRFRO","15-18","F"],["Murphy Kimberly",17,"LLST","15-18","F"],["Taylor Elle",15,"SH","15-18","F"],["Salmon Anna",18,"TBS","15-18","F"],["Rios Juliette",15,"TBS","15-18","F"],["Donahue Jack",8,"GFG","8&U pool","M"],["Abbruzzese Henry",7,"MOC","8&U pool","M"],["Schlagheck Rhett",8,"WSW","8&U pool","M"],["Anderson James",8,"MOC","8&U pool","M"],["Richardson Porter",8,"GFG","8&U pool","M"],["Raaberg Theo",8,"TFT","8&U pool","M"],["Pitsch Nico",8,"MCMR","8&U pool","M"],["McCarron Oliver",7,"KFARK","8&U pool","M"],["kakarlapudi Ayaan",8,"BBST","8&U pool","M"],["Bludau John",8,"WSW","8&U pool","M"],["Colosimo Christopher",8,"EE","8&U pool","M"],["Richards Brooks",8,"LLST","8&U pool","M"],["Venkanagari Gautham",8,"BBST","8&U pool","M"],["Jones Miles",8,"BBST","8&U pool","M"],["Macri Jaden",8,"TBS","8&U pool","M"],["Finelli Theodore",7,"KFARK","8&U pool","M"],["Sunilkumar Praayan",8,"BP","8&U pool","M"],["Gibson Shepard",8,"MOC","8&U pool","M"],["Diglisic Nikola",7,"LRFRO","8&U pool","M"],["Tandon Kabir",8,"LVET","8&U pool","M"],["Chami Haley",7,"TIDE","8&U pool","F"],["Meleney Emilia",8,"WWNOR","8&U pool","F"],["DeLaurentis Louisa",8,"WSW","8&U pool","F"],["Fiffick A'Mare",8,"LV2","8&U pool","F"],["Morris Taylor",8,"WSW","8&U pool","F"],["Wagner Zoe",8,"FPS","8&U pool","F"],["Wilson Zoe",7,"TFT","8&U pool","F"],["Fedorchak Emma",8,"GFG","8&U pool","F"],["Gourineni Nihira",8,"SRST","8&U pool","F"],["Dyer Harper",8,"WWNOR","8&U pool","F"],["Dowling Brooke",8,"BBST","8&U pool","F"],["Abou Darwiche Eleina",8,"SRST","8&U pool","F"],["Lincoln Giuliana",8,"GFG","8&U pool","F"],["Lemon Rosa",8,"LDST","8&U pool","F"],["Mills Clara",8,"LDST","8&U pool","F"],["Shirodkar Abigail",8,"LMM","8&U pool","F"],["Bracke Annabelle",8,"LDST","8&U pool","F"],["Cramer Lucy",8,"BBST","8&U pool","F"],["Patterson Meadow",7,"WSW","8&U pool","F"],["Revelle Zelie",8,"WWNOR","8&U pool","F"],["Abbruzzese Jack",9,"MOC","10&U pool","M"],["Posey Hunter",10,"DFDR","10&U pool","M"],["Morrison Aaron",9,"LLST","10&U pool","M"],["Miller Max",10,"WWNOR","10&U pool","M"],["Ngo Arthur",9,"SRST","10&U pool","M"],["Beal Ezra",9,"PCB","10&U pool","M"],["Cardoza Nicolai",10,"LRFRO","10&U pool","M"],["Nguyen Theodore",10,"KFARK","10&U pool","M"],["Warburton Oliver",10,"ORCAS","10&U pool","M"],["Dannels Zayden",9,"STRAT","10&U pool","M"],["Bergner Corbin",9,"KFS","10&U pool","M"],["Solensky Evan",10,"TIDE","10&U pool","M"],["Santos Rockwell",10,"LDST","10&U pool","M"],["LeMoine Dylan",10,"TBS","10&U pool","M"],["HESAMI AIDEN",10,"PSSVA","10&U pool","M"],["Warner Evelien",10,"LV2","10&U pool","F"],["Damewood Penelope",10,"FPS","10&U pool","F"],["Weber Ellen",10,"LDST","10&U pool","F"],["Stapleton Jacqueline",10,"DFDR","10&U pool","F"],["Lisanti Camilila",10,"GFG","10&U pool","F"],["Pannala Deetya",10,"SRST","10&U pool","F"],["Jung Madison",10,"ORCAS","10&U pool","F"],["Russell Henley",10,"MOC","10&U pool","F"],["Schutt Emily",9,"GFG","10&U pool","F"],["Lash Audrey",10,"DFDR","10&U pool","F"],["Jones Elizabeth",10,"TBS","10&U pool","F"],["Young Sabrina",10,"LDST","10&U pool","F"],["Liu Mila",9,"SRST","10&U pool","F"],["Rodgers Alayna",10,"MCMR","10&U pool","F"],["Gheen Grayson",10,"BP","10&U pool","F"],["Hertz Caroline",9,"SH","10&U pool","F"],["Morris Nora",10,"EMM","10&U pool","F"],["Keefe Addie",10,"TBS","10&U pool","F"],["Burris Annabelle",10,"ORCAS","10&U pool","F"],["Hansen Sloan",9,"SH","10&U pool","F"],["To Cody",12,"TBS","11-12","M"],["Le Jake",11,"DFDR","11-12","M"],["Rhee Jacob",12,"BP","11-12","M"],["Peev Max",12,"ORCAS","11-12","M"],["Irwin Avery",11,"GFG","11-12","M"],["Summers Garrett",12,"ILE","11-12","M"],["Bludau David",12,"WSW","11-12","M"],["Munkhtulga Tuguldur",12,"LVET","11-12","M"],["Dickerson Jackson",12,"SH","11-12","M"],["Coulter Chase",12,"WSW","11-12","M"],["Whittington Maximus",12,"LVET","11-12","M"],["Segalini Olivia",12,"MCMR","11-12","F"],["Merdler Adelyne",12,"STRAT","11-12","F"],["Bisht Anjika",12,"LV2","11-12","F"],["Stapleton Jasmine",12,"DFDR","11-12","F"],["Rodgers Zoey",12,"FPS","11-12","F"],["Lee Declynn",11,"LRFRO","11-12","F"],["Mauritz Anne",12,"SH","11-12","F"],["McDonough Molly",12,"EE","11-12","F"],["Park Celina",12,"SRST","11-12","F"],["Bosley Poppy",12,"MOC","11-12","F"],["Eastman Ashley",12,"SRST","11-12","F"],["Rayner Harper",12,"SH","11-12","F"],["Moreno Mia",12,"GFG","11-12","F"],["Farouki Maya",11,"LLST","11-12","F"],["Lamb Hayden",14,"WWNOR","13-14","M"],["Peev Zane",14,"ORCAS","13-14","M"],["Vereen Tyler",14,"LLST","13-14","M"],["Tiwari Atharva",13,"BP","13-14","M"],["Yun Gian",13,"MCMR","13-14","M"],["Lam Caleb",13,"WWNOR","13-14","M"],["Mayner Liam",14,"ILE","13-14","M"],["Burgess Tatsuya",14,"TBS","13-14","M"],["Muchard Ryley",14,"LVET","13-14","M"],["MAKAREVYCH ILYA",14,"PCB","13-14","M"],["Khraibani Kieren",13,"LMM","13-14","M"],["Cooley Chase",13,"PCB","13-14","M"],["Byrne Anne",14,"BP","13-14","F"],["Moore Emmaline",14,"BP","13-14","F"],["Whelband Amelia",14,"LDST","13-14","F"],["Paxton Reece",14,"ILE","13-14","F"],["Dowling Paige",13,"BBST","13-14","F"],["Sheldon Allie",14,"FPS","13-14","F"],["Velotta Olivia",13,"BBST","13-14","F"],["Le Caroline",14,"PSSVA","13-14","F"],["Bua Mia",14,"WWNOR","13-14","F"],["Masis Alessandra",14,"LMM","13-14","F"],["Cuadros Allison",13,"SRST","13-14","F"],["Tynan Isabella",13,"DFDR","13-14","F"],["Kao Everleigh",13,"LVET","13-14","F"],["Estrella Addison",13,"TBS","13-14","F"],["Annand Claire",14,"SH","13-14","F"],["Sadowski Sydney",13,"WSW","13-14","F"],["Kelly Viera",13,"LDST","13-14","F"],["Rout Trisha",14,"LVET","13-14","F"],["Bommakanti Tanvi",14,"HUR","13-14","F"],["Dang Josslyn",13,"SRST","13-14","F"],["Lynn Ethan",17,"TBS","15-18","M"],["Prasad Swarit",16,"HUR","15-18","M"],["Kim Dylan",15,"BBST","15-18","M"],["Vo Branden",16,"KFS","15-18","M"],["Cates Jordan",18,"FPS","15-18","M"],["Deeney Ruairi",16,"GFG","15-18","M"],["Kao Channing",18,"LVET","15-18","M"],["Petti Stephen",17,"BBST","15-18","M"],["Giurintano Matthew",18,"GFG","15-18","M"],["Pascarella Rocco",16,"EE","15-18","M"],["Cassidy Henry",17,"ILE","15-18","M"],["Weber Joshua",17,"LV2","15-18","M"],["Markatos Todd",16,"PSSVA","15-18","M"],["doCarmo Dylan",17,"WWNOR","15-18","M"],["Homa Madelyn",17,"EE","15-18","F"],["Diemar Irelyn",15,"ILE","15-18","F"],["Steorts Cora",16,"GFG","15-18","F"],["Bailey Annabelle",17,"BBST","15-18","F"],["Goddard Eleanor",16,"EE","15-18","F"],["Thomas Summer",15,"EE","15-18","F"],["Gaffrey Grace",15,"BBST","15-18","F"],["Singh Swara",15,"WWNOR","15-18","F"],["Mays Madelyn",15,"FPS","15-18","F"],["Abugideiri Noah",8,"BP","8&U pool","M"],["Fox Noah",7,"ILE","8&U pool","M"],["Dalessio Luca",7,"WSW","8&U pool","M"],["Sahni Abeer",8,"ILE","8&U pool","M"],["Ferrara Troy",8,"LRFRO","8&U pool","M"],["Austin Nolan",7,"EE","8&U pool","M"],["Schwee Carter",8,"WWNOR","8&U pool","M"],["Tejada Rafael",8,"WSW","8&U pool","M"],["Furman Ivy",8,"TBS","8&U pool","F"],["Barton Penelope",8,"DFDR","8&U pool","F"],["Flanagan Caroline",7,"WWNOR","8&U pool","F"],["Levesque Zyler",8,"LDST","8&U pool","F"],["Jendzejec Josephine",8,"ORCAS","8&U pool","F"],["Newport Blake",7,"LRFRO","8&U pool","F"],["Zumwalt Ava",7,"KFARK","8&U pool","F"],["Karki Shaarvi",8,"LMM","8&U pool","F"],["Guinivan Kayla",8,"KFS","8&U pool","F"],["Colello Charlotte Jeannette",8,"TIDE","8&U pool","F"],["Huamonte Kaia",8,"WSW","8&U pool","F"],["Whitaker Rylee",8,"FPS","8&U pool","F"],["Yankoupe James",9,"EE","10&U pool","M"],["Prendergast Lachlann",10,"MOC","10&U pool","M"],["Aboafch Samuel",9,"BBST","10&U pool","M"],["Carmakal Josh",9,"WWNOR","10&U pool","M"],["Parrish Wren",9,"WSW","10&U pool","F"],["Pyakuryal Siya",9,"SRST","10&U pool","F"],["Pilajevs Milana",9,"BBST","10&U pool","F"],["Fletcher Isabelle",10,"LLST","10&U pool","F"],["Bloom Wesley",9,"FPS","10&U pool","F"],["Owens Lia",10,"WSW","10&U pool","F"],["Asselin Camille",9,"MOC","10&U pool","F"],["Schoppet Dylan",11,"SRST","11-12","M"],["Kruttschnitt Luke",12,"GFG","11-12","M"],["Fox Emmett",11,"ILE","11-12","M"],["Nicholson Max",12,"PSSVA","11-12","M"],["Tomar Jay",12,"DFDR","11-12","M"],["Cruz Noah",11,"GFG","11-12","M"],["Chiranjeevi Ayush",11,"LVET","11-12","M"],["Shirguppi Parth",12,"LVET","11-12","M"],["Stockdale Liam",12,"LRFRO","11-12","M"],["Montgomery Samantha",11,"WWNOR","11-12","F"],["Yankoupe Anna",11,"EE","11-12","F"],["Carlozzi Harper",12,"LRFRO","11-12","F"],["Miller Stella",11,"WSW","11-12","F"],["Reddy Emmanuelle",11,"WSW","11-12","F"],["Kwon Alison",11,"LMM","11-12","F"],["Prajapati Samved",13,"ILE","13-14","M"],["Khare Sid",14,"KFARK","13-14","M"],["Buckley Aiden",13,"SRST","13-14","M"],["Wohlfeil John",14,"LDST","13-14","M"],["Deskins Drake",14,"LDST","13-14","M"],["Kim Elise",13,"LVET","13-14","F"],["Miller Madison",14,"ILE","13-14","F"],["Georgelas Lillian",13,"BP","13-14","F"],["Deo Brynn",13,"WSW","13-14","F"],["Marion Lorelai",14,"PSSVA","13-14","F"],["Shin Aidan",16,"LVET","15-18","M"],["Creighton James",17,"LDST","15-18","M"],["Billis Lukas",16,"BP","15-18","M"],["Agili Adyanth",16,"WSW","15-18","M"],["Groves Luke",16,"BBST","15-18","M"],["Patki Veer",17,"BBST","15-18","M"],["Banik Keira",16,"FPS","15-18","F"],["Schoppet Leila",16,"SRST","15-18","F"],["Lankenau Sienna",15,"PSSVA","15-18","F"],["Menez Izabel",15,"DFDR","15-18","F"],["Strickland Madeleine",17,"EE","15-18","F"],["Yanala Arjun",10,"LMM","10&U pool","M"],["DuPlissey Wyatt",9,"LDST","10&U pool","M"],["Seng Oliver",9,"SRST","10&U pool","M"],["Barras Chase",10,"FPS","10&U pool","M"],["Thai Kyle",10,"LVET","10&U pool","M"],["Jendzejec Kayla",10,"ORCAS","10&U pool","F"],["Stiles Delaney",9,"LLST","10&U pool","F"],["Pandey Myra",10,"KFARK","10&U pool","F"],["Campbell Henry",18,"LDST","15-18","M"],["Roy Michael",17,"DFDR","15-18","M"],["Singh Shloka",15,"WWNOR","15-18","F"]],"R":{"6&U":1.1383647798742138,"8&U pool":1.117117117117117,"10&U pool":1.0484581497797356,"11-12":1.074792243767313,"13-14":1.0342052313883299,"15-18":1.021021021021021},"F":{"10&U pool":0.9381673416789396,"6&U":0.911197756943836,"13-14":0.8792669340463458,"11-12":0.9261204481792717,"8&U pool":0.9452493593534398,"15-18":0.7422568553955415},"Q":{"6&U":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.00066,0.00098,0.00193,0.00288,0.00422,0.00537,0.00581,0.00586,0.00586,0.00586,0.00729,0.01011,0.01042,0.01068,0.01216,0.01523,0.01636,0.01636,0.01636,0.01636,0.01636,0.01636,0.01636,0.01636,0.01636,0.01636,0.01862,0.0192,0.0192,0.01989,0.02052,0.02085,0.02085,0.02085,0.02085,0.02085,0.02085,0.02085,0.02085,0.02085,0.02085,0.02085],"8&U pool":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.00022,0.00079,0.00114,0.00118,0.00131,0.00165,0.00222,0.00268,0.00279,0.00342,0.00464,0.00662,0.00752,0.00794,0.00803,0.00811,0.00811,0.00813,0.00827,0.00913,0.00961,0.01077,0.0116,0.01238,0.01285,0.01285,0.01285,0.01285,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329,0.01329],"10&U pool":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5e-05,6e-05,0.00032,0.00037,0.00048,0.00048,0.00055,0.00074,0.00154,0.00235,0.00341,0.00341,0.00341,0.00365,0.0048,0.00543,0.00578,0.00604,0.00672,0.00742,0.00824,0.00857,0.00862,0.00862,0.00892,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921,0.00921],"11-12":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.00027,0.001,0.00162,0.00199,0.00237,0.00279,0.00318,0.00323,0.00373,0.00416,0.00459,0.00459,0.00497,0.00522,0.0056,0.00582,0.0067,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741,0.00741],"13-14":[0.0,0.0,0.0,0.0,1e-05,4e-05,4e-05,0.00012,0.00016,0.00018,0.00033,0.00034,0.00036,0.00036,0.00036,0.00036,0.00047,0.00068,0.00084,0.00104,0.0012,0.00129,0.0013,0.00133,0.00207,0.00244,0.00277,0.00277,0.00277,0.00277,0.00277,0.00277,0.00277,0.00395,0.00509,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532,0.00532],"15-18":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.00013,0.00016,0.00022,0.00022,0.00022,0.00022,0.00022,0.00022,0.00022,0.00022,0.00022,0.00025,0.00026,0.00026,0.00027,0.00053,0.00125,0.00147,0.00157,0.00163,0.00174,0.00296,0.00366,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467,0.00467]},"H":{"y23":{"entries":938,"athletes":436,"median":18.0,"min":18,"under16":0,"under18":0,"heats":158,"secs":11355,"events":52},"y24":{"entries":1050,"athletes":507,"median":20.0,"min":11,"under16":11,"under18":15,"heats":197,"secs":14029,"events":52},"y25":{"entries":992,"athletes":498,"median":19.0,"min":10,"under16":16,"under18":23,"heats":188,"secs":13293,"events":52}}};
+const R = DATA.R, F = DATA.F, Q = DATA.Q, EV = DATA.events;
+for (const e of EV){
+  const dq = Q[e.cl];
+  e.shifted = e.rows.map((r, p) => r[1] * (1 - dq[Math.min(p, dq.length-1)]));
+}
+const SW = DATA.swimmers;         // [name, age, team, cluster, side]
+const state = { target: 18, cuts: EV.map(e => e.cut) };
+const expanded = new Set();
+let LAST = null, BASE = null;
+
+function fmt(t){
+  if (t >= 60){ const m = Math.floor(t/60); return m + ":" + (t-60*m).toFixed(2).padStart(5,"0"); }
+  return t.toFixed(2);
+}
+function ord(n){
+  const s = ["th","st","nd","rd"], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+const PREF = new Map();
+{
+  const tmp = new Map();
+  for (let i = 0; i < EV.length; i++){
+    const rows = EV[i].rows;
+    for (let p = 0; p < rows.length; p++){
+      const s = rows[p][0];
+      if (!tmp.has(s)) tmp.set(s, []);
+      tmp.get(s).push([i, p, rows[p][1]/EV[i].cut]);
+    }
+  }
+  for (const [s, lst] of tmp){
+    lst.sort((a,b) => a[1]-b[1] || a[2]-b[2]);
+    PREF.set(s, lst);
+  }
+}
+function computeAll(cuts, detail){
+  const byS = new Map();
+  const nNow = new Array(EV.length).fill(0);
+  const evQual = detail ? EV.map(() => []) : null;
+  for (let i = 0; i < EV.length; i++){
+    const rows = EV[i].rows, c = cuts[i] + 1e-9;
+    for (let p = 0; p < rows.length; p++){
+      if (rows[p][1] > c) break;
+      nNow[i]++;
+      const s = rows[p][0];
+      if (!byS.has(s)) byS.set(s, new Set());
+      byS.get(s).add(i);
+      if (detail) evQual[i].push({s, sec: rows[p][1], pos: p});
+    }
+  }
+  const Enow = new Array(EV.length).fill(0);
+  const chosen = detail ? new Map() : null;
+  const inTop3 = detail ? EV.map(() => new Set()) : null;
+  for (const [s, qset] of byS){
+    const f = F[SW[s][3]];
+    const pref = PREF.get(s);
+    const picks = [];
+    for (let j = 0; j < pref.length && picks.length < 3; j++){
+      if (qset.has(pref[j][0])) picks.push(pref[j]);
+    }
+    for (const q of picks) Enow[q[0]] += f;
+    if (detail){
+      chosen.set(s, picks.map(q => [q[0], q[1]]));
+      for (const q of picks) inTop3[q[0]].add(s);
+    }
+  }
+  const res = EV.map((e, i) => {
+    const r = R[e.cl] ?? 1.06, f = F[e.cl];
+    const c = cuts[i] + 1e-9;
+    let nShift = 0;
+    for (let p = 0; p < e.shifted.length; p++) if (e.shifted[p] <= c) nShift++;
+    const add = ((r-1)*nNow[i] + Math.max(0, nShift - nNow[i])) / 2;
+    return { nNow: nNow[i], projQ: nNow[i] + add, add,
+             proj: Enow[i] + add*f,
+             cens: nNow[i] >= e.depth };
+  });
+  return detail ? { res, evQual, chosen, inTop3, qualSet: new Set(byS.keys()) }
+                : { res };
+}
+const SUGNOTE = {};
+function suggestCut(i, cuts, target, quiet){
+  const e = EV[i], rows = e.rows, cur = cuts[i];
+  const trial = cuts.slice();
+  const curRp = Math.round(computeAll(cuts, false).res[i].proj);
+  if (!quiet) delete SUGNOTE[i];
+  // candidate cuts: every 0.01s point where the projection can step -
+  // each ranked time (the cut moving up) and each shifted time (the
+  // curve moving down: a projected divisionals crossing entering).
+  const cand = new Set();
+  for (let p = 0; p < rows.length; p++){
+    const raw = Math.round(rows[p][1]*100)/100;
+    if (raw > cur) cand.add(raw);
+    const sh = Math.ceil(e.shifted[p]*100 - 1e-7)/100;
+    if (sh > cur) cand.add(sh);
+  }
+  const cs = [...cand].sort((a,b) => a-b);
+  let exact = null, over = null, under = null;
+  for (const t of cs){
+    trial[i] = t;
+    const rp = Math.round(computeAll(trial, false).res[i].proj);
+    if (rp === target){ exact = {cut: t, rp: rp}; break; }
+    if (rp > target){ if (!over || rp < over.rp) over = {cut: t, rp: rp}; }
+    else if (!under || rp > under.rp) under = {cut: t, rp: rp};
+  }
+  if (exact) return exact.cut;
+  const bestUnderRp = Math.max(curRp, under ? under.rp : -1);
+  if (over){
+    const tieN = rows.filter(r => Math.round(r[1]*100)/100 === over.cut).length;
+    if (!quiet) SUGNOTE[i] = tieN > 1
+      ? 'tie at the line: ' + tieN + ' share ' + fmt(over.cut) + ' - field goes ' + bestUnderRp + ' or ' + over.rp
+      : 'no cut yields exactly ' + target + ': nearest fields are ' + bestUnderRp + ' and ' + over.rp;
+  } else {
+    if (!quiet) SUGNOTE[i] = 'ranked list runs out at ' + bestUnderRp;
+  }
+  if (over && over.rp - target <= target - bestUnderRp) return over.cut;
+  if (under && under.rp > curRp) return under.cut;
+  return null;
+}
+function status(proj, target){
+  const rp = Math.round(proj);
+  if (rp < target) return ["short","Below standard"];
+  if (rp <= 24) return ["ok","Meets standard"];
+  return ["deep","Large field"];
+}
+
+// ---------- meet time model ----------
+function meetSeconds(cuts, full){
+  let secs = 0, heats = 0;
+  for (let i = 0; i < EV.length; i++){
+    const field = Math.round(full.res[i].proj);
+    if (field <= 0) continue;
+    const q = full.evQual[i];
+    const nh = Math.ceil(field/6);
+    heats += nh;
+    for (let h = 0; h < nh; h++){
+      const idx = Math.min(field, (h+1)*6) - 1;
+      secs += (idx < q.length ? q[idx].sec : cuts[i]) + 30;
+    }
+  }
+  return { secs, heats };
+}
+
+// ---------- detail row ----------
+function detailHTML(i){
+  const e = EV[i], q = LAST.evQual[i], top3 = LAST.inTop3[i];
+  const baseSet = new Set(BASE.evQual[i].map(r => r.s));
+  const slotted = q.filter(r => top3.has(r.s));
+  const capped = q.length - slotted.length;
+  let expNoShow = 0;
+  for (const r of slotted) expNoShow += 1 - F[SW[r.s][3]];
+  const divAdd = LAST.res[i].add;
+  let rows = "";
+  for (const r of q){
+    const sw = SW[r.s];
+    const isNew = !baseSet.has(r.s);
+    const tag = isNew ? `<span class="newq">new</span>` : ``;
+    if (top3.has(r.s)){
+      rows += `<div class="drow"><span class="pos">${r.pos+1}.</span><span class="nm">${sw[0]}</span>` +
+              `<span class="meta">${sw[1]} &middot; ${sw[2]}</span><span class="tm">${fmt(r.sec)}</span>${tag}</div>`;
+    } else {
+      const why = (LAST.chosen.get(r.s) || [])
+        .map(([ev, pos]) => `${ord(pos+1)} ${EV[ev].short}`).join(" &middot; ");
+      rows += `<div class="drow struck"><span class="pos">${r.pos+1}.</span><span class="nm">${sw[0]}</span>` +
+              `<span class="meta">${sw[1]} &middot; ${sw[2]}</span><span class="tm">${fmt(r.sec)}</span>` +
+              `<span class="why">swimming: ${why}</span>${tag}</div>`;
+    }
+  }
+  let bub = "", nb = 0;
+  const bcut = state.cuts[i] + 1e-9;
+  for (let p = 0; p < e.rows.length; p++){
+    const t = e.rows[p][1];
+    if (t <= bcut || e.shifted[p] > bcut) continue;
+    const sid = e.rows[p][0], sw = SW[sid];
+    nb++;
+    const atCap = (LAST.chosen.get(sid) || []).length >= 3;
+    bub += `<div class="drow bub"><span class="pos">${p+1}.</span><span class="nm">${sw[0]}</span>` +
+           `<span class="meta">${sw[1]} &middot; ${sw[2]}</span><span class="tm">${fmt(t)}</span>` +
+           `<span class="gap">+${(t-state.cuts[i]).toFixed(2)} over &rarr; projects ~${fmt(e.shifted[p])}</span>` +
+           (atCap ? `<span class="why">at 3-event limit</span>` : ``) + `</div>`;
+  }
+  const bubSec = nb ? `<div class="dhead">Divisionals bubble (${nb}) &mdash; projected to cross at divisionals</div>` +
+    `<div class="dnote">Above the cut by less than the typical divisionals drop for their rank and age group. ` +
+    `The +~ figure above blends this named list with the historical growth view, so the two can differ slightly.</div>` +
+    `<div class="dlist">${bub}</div>` : ``;
+  return `<div class="dsum">` +
+    `<span class="dpt"><b>${q.length}</b> qualified under ${fmt(state.cuts[i])}</span>` +
+    `<span class="dpt"><b>${slotted.length}</b> slotted for this event</span>` +
+    `<span class="dpt"><b>${capped}</b> projected to swim other events</span>` +
+    `<span class="dpt"><b>~${expNoShow.toFixed(1)}</b> of the ${slotted.length} unlikely to swim All Stars at all</span>` +
+    `<span class="dpt"><b>+~${divAdd.toFixed(1)}</b> qualifiers expected from divisionals</span>` +
+    `</div><div class="dlist">${rows || "<div class='drow'>No qualifiers under this cut.</div>"}</div>` + bubSec;
+}
+
+// ---------- render ----------
+const tbody = document.getElementById("tbody");
+let order = "num";
+const flt = {g:"", a:"", s:""};
+const FMETA = EV.map(e => {
+  const [grp, dist, stroke] = e.key.split("|");
+  const gw = grp.split(" ")[0];
+  return {g: (gw === "Boys" || gw === "Men") ? "M" : "F", a: grp.slice(gw.length + 1), s: stroke};
+});
+function render(){
+  LAST = computeAll(state.cuts, true);
+  const res = LAST.res;
+  const idx = EV.map((_, i) => i);
+  if (order === "proj") idx.sort((a,b) => res[a].proj - res[b].proj);
+  else if (order === "projdesc") idx.sort((a,b) => res[b].proj - res[a].proj);
+  tbody.innerHTML = "";
+  let nShort = 0, nOk = 0, nDeep = 0;
+  for (let i = 0; i < EV.length; i++){
+    const c0 = status(res[i].proj, state.target)[0];
+    if (c0 === "short") nShort++; else if (c0 === "ok") nOk++; else nDeep++;
+  }
+  const shown = idx.filter(i =>
+    (!flt.g || FMETA[i].g === flt.g) &&
+    (!flt.a || FMETA[i].a === flt.a) &&
+    (!flt.s || FMETA[i].s === flt.s));
+  document.getElementById("showing").textContent =
+    shown.length === EV.length ? "" : `Showing ${shown.length} of ${EV.length}`;
+  if (!shown.length)
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:26px;color:var(--muted)">No events match the current filters.</td></tr>`;
+  for (const i of shown){
+    const e = EV[i], r = res[i], changed = Math.abs(state.cuts[i]-e.cut) > 0.004;
+    const [cls, txt] = status(r.proj, state.target);
+    const ttl = cls === "short" ? "Projected entries below the target minimum \u2014 loosen the cut"
+              : cls === "ok"    ? "Projected entries from the target up through 24 (four full 6-lane heats)"
+              :                   "25 or more projected entries \u2014 a fifth heat; cannot be reduced mid-season";
+    const [acls, atxt] = Math.round(r.proj) < state.target
+      ? ["raise", "Raise Cut Time"]
+      : changed ? ["done", state.cuts[i] > e.cut ? "Cut Time Raised" : "Cut Time Lowered"]
+      : ["same", "No change to cut time"];
+    const ge = r.cens ? "&ge;" : "";
+    const lo = e.cut, hi = Math.round(e.cut*1.15*100)/100;
+
+    const open = expanded.has(i);
+    const tr = document.createElement("tr");
+    if (changed) tr.className = "changed";
+    tr.innerHTML =
+      `<td class="ev"><button class="caret${open?" open":""}" data-act="tgl" data-i="${i}" title="Show qualified swimmers">&#9656;</button>` +
+      `<span class="num">#${e.n}</span> ${e.label}</td>` +
+      `<td class="r" data-l="Adopted cut">${fmt(e.cut)}</td>` +
+      `<td class="slider"><input type="range" min="${lo}" max="${hi}" step="0.01" value="${state.cuts[i]}" data-i="${i}"></td>` +
+      `<td class="r" data-l="Proposed cut"><input class="cutbox${changed?" changed":""}" value="${fmt(state.cuts[i])}" data-i="${i}">` +
+      `${SUGNOTE[i] ? '<div class="cutnote">'+SUGNOTE[i]+'</div>' : ""}</td>` +
+      `<td class="r" data-l="Qualified Today">${r.cens ? e.depth + "+" : r.nNow}</td>` +
+      `<td class="r" data-l="Qualified After Divisionals">${ge}${Math.round(r.projQ)}</td>` +
+      `<td class="r proj" data-l="Projected All-Star Entries" title="${ttl}" style="color:${cls==="short"?"var(--red)":cls==="ok"?"var(--green)":"var(--blue)"}">${ge}${Math.round(r.proj)}</td>` +
+      `<td class="c" data-l="Suggested Action"><span class="act ${acls}">${atxt}</span></td>` +
+      `<td class="c"><button class="mini" data-act="sug" data-i="${i}">Suggest</button> ` +
+      `<button class="mini" data-act="rst" data-i="${i}" ${changed?"":"disabled"}>Reset</button></td>`;
+    tbody.appendChild(tr);
+    if (open){
+      const dr = document.createElement("tr");
+      dr.className = "detail";
+      dr.innerHTML = `<td colspan="9">${detailHTML(i)}</td>`;
+      tbody.appendChild(dr);
+    }
+  }
+  document.getElementById("counts").innerHTML =
+    `<span class="chip short">${nShort} below standard</span>` +
+    `<span class="chip ok">${nOk} meet standard</span>` +
+    `<span class="chip deep">${nDeep} large field${nDeep===1?"":"s"}</span>`;
+  renderImpact();
+  renderYoy();
+  notifyHeight();
+}
+
+// ---------- year-over-year panel ----------
+function yoyStats(full, cuts){
+  let ath = 0;
+  for (const s of full.qualSet) ath += F[SW[s][3]];
+  const fields = full.res.map(r => Math.round(r.proj));
+  const sorted = [...fields].sort((a,b) => a-b);
+  const n = sorted.length;
+  const median = n % 2 ? sorted[(n-1)/2] : (sorted[n/2-1] + sorted[n/2]) / 2;
+  const mt = meetSeconds(cuts, full);
+  return { athletes: Math.round(ath), entries: fields.reduce((a,b) => a+b, 0), median, min: sorted[0],
+           under16: full.res.filter(r => Math.round(r.proj) < 16).length,
+           under18: full.res.filter(r => Math.round(r.proj) < 18).length, heats: mt.heats, secs: mt.secs };
+}
+function renderYoy(){
+  const H = DATA.H;
+  const b = yoyStats(BASE, EV.map(e => e.cut));
+  const c = yoyStats(LAST, state.cuts);
+  const fh = s => (s/3600).toFixed(1) + " h";
+  const row = (lbl, a23, a24, a25, vb, vc) =>
+    `<tr><td>${lbl}</td><td class="r">${a23}</td><td class="r">${a24}</td><td class="r">${a25}</td>` +
+    `<td class="r">${vb}</td><td class="r"><b>${vc}</b></td></tr>`;
+  document.getElementById("yoyTbl").innerHTML =
+    `<table><thead><tr><th>Meet</th><th class="r">2023 actual (Stone Ridge)</th><th class="r">2024 actual</th><th class="r">2025 actual</th>` +
+    `<th class="r">2026 proj., adopted cuts</th><th class="r">2026 proj., proposed cuts</th></tr></thead><tbody>` +
+    row("Total entries", H.y23.entries, H.y24.entries, H.y25.entries, b.entries, c.entries) +
+    row("Athletes", H.y23.athletes, H.y24.athletes, H.y25.athletes, "~" + b.athletes, "<b>~" + c.athletes + "</b>") +
+    row("Median event field", H.y23.median, H.y24.median, H.y25.median, b.median, c.median) +
+    row("Smallest event field", H.y23.min, H.y24.min, H.y25.min, b.min, c.min) +
+    row("Events under 18 (entry standard)", H.y23.under18, H.y24.under18, H.y25.under18, b.under18, c.under18) +
+    row("Events under 16 (scoring depth)", H.y23.under16, H.y24.under16, H.y25.under16, b.under16, c.under16) +
+    row("Heats", H.y23.heats, H.y24.heats, H.y25.heats, b.heats, c.heats) +
+    row("Est. racing time", fh(H.y23.secs), fh(H.y24.secs), fh(H.y25.secs), fh(b.secs), fh(c.secs)) +
+    `</tbody></table>`;
+  const brow = (lbl, y) =>
+    `<div class="brow"><span class="blbl">${lbl}</span>` +
+    `<span class="bv">${y.athletes} swimmers</span><span class="bv">${y.entries} swims</span><span class="bv">${y.heats} heats</span></div>`;
+  document.getElementById("bench").innerHTML =
+    brow("2023 All Stars (Stone Ridge)", H.y23) +
+    brow("2024 All Stars", H.y24) +
+    brow("2025 All Stars", H.y25) +
+    `<div class="brow now"><span class="blbl">2026 at these cuts</span>` +
+    `<span class="bv">~${c.athletes} swimmers</span><span class="bv">${c.entries} swims</span><span class="bv">${c.heats} heats</span></div>`;
+}
+
+// ---------- impact panel ----------
+function renderImpact(){
+  const cur = LAST, base = BASE;
+  const gained = [], lost = [];
+  for (const s of cur.qualSet) if (!base.qualSet.has(s)) gained.push(s);
+  for (const s of base.qualSet) if (!cur.qualSet.has(s)) lost.push(s);
+  const dEntries = cur.res.reduce((a,r) => a+r.proj, 0) - base.res.reduce((a,r) => a+r.proj, 0);
+  const tCur = meetSeconds(state.cuts, cur), tBase = meetSeconds(EV.map(e=>e.cut), base);
+  const dMin = (tCur.secs - tBase.secs)/60;
+  const net = gained.length - lost.length;
+  document.getElementById("impactCards").innerHTML =
+    `<div class="card"><div class="big${net>0?" pos":""}">${net>0?"+":""}${net}</div>` +
+    `<div class="lbl">New All-Star swimmers league-wide${lost.length?` (${gained.length} gained, ${lost.length} lost)`:""}</div></div>` +
+    `<div class="card"><div class="big${dEntries>0.5?" pos":""}">${dEntries>0?"+":""}${Math.round(dEntries)}</div><div class="lbl">Additional projected entries</div></div>` +
+    `<div class="card"><div class="big">${tCur.heats-tBase.heats>0?"+":""}${tCur.heats-tBase.heats}</div><div class="lbl">Additional heats (${tBase.heats} &rarr; ${tCur.heats})</div></div>` +
+    `<div class="card"><div class="big">${dMin>0?"+":""}${dMin.toFixed(0)} min</div><div class="lbl">Added meet time (est. racing ${(tBase.secs/3600).toFixed(1)} h &rarr; ${(tCur.secs/3600).toFixed(1)} h)</div></div>`;
+
+  const CL = ["6&U","8&U pool","10&U pool","11-12","13-14","15-18"];
+  const byAge = {}; CL.forEach(c => byAge[c] = {F:0, M:0});
+  const byTeam = {};
+  for (const s of gained){
+    const sw = SW[s];
+    byAge[sw[3]][sw[4]]++;
+    byTeam[sw[2]] = (byTeam[sw[2]]||0) + 1;
+  }
+  let ageT = `<table><thead><tr><th>Age group</th><th class="r">Girls</th><th class="r">Boys</th><th class="r">Total</th></tr></thead><tbody>`;
+  for (const c of CL){
+    const g = byAge[c].F, b = byAge[c].M;
+    ageT += `<tr><td>${c}</td><td class="r">${g||"&mdash;"}</td><td class="r">${b||"&mdash;"}</td><td class="r"><b>${(g+b)||"&mdash;"}</b></td></tr>`;
+  }
+  ageT += `</tbody></table>`;
+  document.getElementById("impactAge").innerHTML = gained.length ? ageT :
+    `<p class="note" style="margin:0">No new qualifiers yet &mdash; adjust cuts above (or press &ldquo;Suggest cuts for short events&rdquo;).</p>`;
+
+  const teams = Object.entries(byTeam).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]));
+  let teamT = `<table><thead><tr><th>Team</th><th class="r">New qualifiers</th></tr></thead><tbody>`;
+  for (const [t, n] of teams) teamT += `<tr><td>${t}</td><td class="r">${n}</td></tr>`;
+  teamT += `</tbody></table>`;
+  document.getElementById("impactTeam").innerHTML = teams.length ? teamT :
+    `<p class="note" style="margin:0">&mdash;</p>`;
+}
+
+// ---------- events ----------
+tbody.addEventListener("input", ev => {
+  const t = ev.target, i = +t.dataset.i;
+  if (t.type === "range"){ state.cuts[i] = Math.round(+t.value*100)/100; delete SUGNOTE[i]; render(); }
+});
+tbody.addEventListener("change", ev => {
+  const t = ev.target, i = +t.dataset.i;
+  if (t.classList.contains("cutbox")){
+    delete SUGNOTE[i];
+    let v = t.value.trim(), sec;
+    if (v.includes(":")){ const [m,s] = v.split(":"); sec = (+m)*60 + (+s); } else sec = +v;
+    if (isFinite(sec) && sec > 0){
+      state.cuts[i] = Math.min(Math.max(sec, EV[i].cut*0.95), EV[i].cut*1.25);
+      state.cuts[i] = Math.round(state.cuts[i]*100)/100;
+    }
+    render();
+  }
+});
+tbody.addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  const i = +b.dataset.i;
+  if (b.dataset.act === "tgl"){ expanded.has(i) ? expanded.delete(i) : expanded.add(i); render(); }
+  if (b.dataset.act === "rst"){ state.cuts[i] = EV[i].cut; delete SUGNOTE[i]; render(); }
+  if (b.dataset.act === "sug"){
+    const c = suggestCut(i, state.cuts, state.target);
+    if (c !== null){ state.cuts[i] = c; render();
+      toast(SUGNOTE[i] ? `#${EV[i].n} ${EV[i].label}: ${SUGNOTE[i]}` : `#${EV[i].n} ${EV[i].label}: cut ${fmt(c)} reaches ${state.target}`); }
+    else { render(); toast(`#${EV[i].n}: ${SUGNOTE[i] || "target not reachable within ranked depth"}`); }
+  }
+});
+function selLabel(v){ return v < 16 ? "No change" : String(v); }
+document.getElementById("target").addEventListener("input", ev => {
+  document.getElementById("targetVal").textContent = selLabel(+ev.target.value);
+});
+document.getElementById("target").addEventListener("change", ev => {
+  const v = +ev.target.value;
+  state.sel = v;
+  state.target = v < 16 ? 18 : v;
+  for (const k in SUGNOTE) delete SUGNOTE[k];
+  if (v < 16){
+    state.cuts = EV.map(e => e.cut);
+    render(); toast("Adopted cuts, unchanged");
+  } else {
+    const sol = solveAll(EV.map(e => e.cut), v, false);
+    state.cuts = sol.cuts;
+    render(); toast(`Solved at a minimum of ${v}: ${sol.touched.size} cut time${sol.touched.size===1?"":"s"} raised`);
+  }
+});
+document.getElementById("sortSel").addEventListener("change", ev => { order = ev.target.value; render(); });
+document.getElementById("fG").addEventListener("change", ev => { flt.g = ev.target.value; render(); });
+document.getElementById("fA").addEventListener("change", ev => { flt.a = ev.target.value; render(); });
+document.getElementById("fS").addEventListener("change", ev => { flt.s = ev.target.value; render(); });
+document.getElementById("fClr").addEventListener("click", () => {
+  flt.g = ""; flt.a = ""; flt.s = "";
+  for (const id of ["fG","fA","fS"]) document.getElementById(id).value = "";
+  render();
+});
+document.getElementById("resetAll").addEventListener("click", () => {
+  state.cuts = EV.map(e => e.cut);
+  state.sel = 15; state.target = 18;
+  document.getElementById("target").value = 15;
+  document.getElementById("targetVal").textContent = "No change";
+  for (const k in SUGNOTE) delete SUGNOTE[k];
+  render(); toast("Reset to adopted cuts");
+});
+function solveAll(startCuts, target, quiet){
+  const cuts = startCuts.slice();
+  const touched = new Set();
+  for (let pass = 0; pass < 30; pass++){
+    const res = computeAll(cuts, false).res;
+    let changed = false;
+    for (let i = 0; i < EV.length; i++){
+      if (Math.round(res[i].proj) < target){
+        const c = suggestCut(i, cuts, target, quiet);
+        if (c !== null && c !== cuts[i]){ cuts[i] = c; touched.add(i); changed = true; }
+      }
+    }
+    if (!changed) break;
+  }
+  return { cuts, touched };
+}
+function qualByTeam(qualSet){
+  const m = new Map();
+  for (const s of qualSet){ const t = SW[s][2]; m.set(t, (m.get(t)||0) + 1); }
+  return m;
+}
+function buildScenarios(){
+  const adopted = EV.map(e => e.cut);
+  const baseSt = yoyStats(BASE, adopted);
+  const baseTeams = qualByTeam(BASE.qualSet);
+  const H = DATA.H;
+  const fh = s => (s/3600).toFixed(1) + " h";
+  const sc = [];
+  for (const t of [16, 17, 18]){
+    const sol = solveAll(adopted, t, true);
+    const full = computeAll(sol.cuts, true);
+    sc.push({ t, raised: sol.touched.size, st: yoyStats(full, sol.cuts),
+              teams: qualByTeam(full.qualSet), nq: full.qualSet.size });
+  }
+  const row = (lbl, v) =>
+    `<tr><td>${lbl}</td><td class="r">${v[0]}</td><td class="r">${v[1]}</td>` +
+    `<td class="r">${v[2]}</td><td class="r"><b>${v[3]}</b></td><td class="r ref">${v[4]}</td></tr>`;
+  document.getElementById("scTbl").innerHTML =
+    `<table><thead><tr><th>Outcome</th><th class="r">No change</th><th class="r">Min 16</th>` +
+    `<th class="r">Min 17</th><th class="r">Min 18</th><th class="r ref">2025 actual, for scale</th></tr></thead><tbody>` +
+    row("Cut times raised", [0, sc[0].raised, sc[1].raised, sc[2].raised, "&mdash;"]) +
+    row("Total swimmers", ["~"+baseSt.athletes, "~"+sc[0].st.athletes, "~"+sc[1].st.athletes, "~"+sc[2].st.athletes, H.y25.athletes]) +
+    row("Total swims", [baseSt.entries, sc[0].st.entries, sc[1].st.entries, sc[2].st.entries, H.y25.entries]) +
+    row("Total heats", [baseSt.heats, sc[0].st.heats, sc[1].st.heats, sc[2].st.heats, H.y25.heats]) +
+    row("Modeled racing time", [fh(baseSt.secs), fh(sc[0].st.secs), fh(sc[1].st.secs), fh(sc[2].st.secs), fh(H.y25.secs)]) +
+    `</tbody></table>`;
+  const allTeams = [...new Set([...baseTeams.keys(), ...sc[2].teams.keys()])];
+  const pick = (x, t) => (x.teams.get(t)||0) - (baseTeams.get(t)||0);
+  allTeams.sort((a,b) => pick(sc[2],b) - pick(sc[2],a) || a.localeCompare(b));
+  let prows = "";
+  for (const t of allTeams){
+    prows += `<tr><td>${t}</td><td class="r">${baseTeams.get(t)||0}</td>` +
+      `<td class="r">${pick(sc[0],t) ? "+"+pick(sc[0],t) : "&mdash;"}</td>` +
+      `<td class="r">${pick(sc[1],t) ? "+"+pick(sc[1],t) : "&mdash;"}</td>` +
+      `<td class="r"><b>${pick(sc[2],t) ? "+"+pick(sc[2],t) : "&mdash;"}</b></td></tr>`;
+  }
+  prows += `<tr class="tot"><td>League total</td><td class="r">${BASE.qualSet.size}</td>` +
+    `<td class="r">+${sc[0].nq - BASE.qualSet.size}</td><td class="r">+${sc[1].nq - BASE.qualSet.size}</td>` +
+    `<td class="r"><b>+${sc[2].nq - BASE.qualSet.size}</b></td></tr>`;
+  document.getElementById("pickupTbl").innerHTML =
+    `<table><thead><tr><th>Team</th><th class="r">Qualifiers, no change</th><th class="r">Min 16</th>` +
+    `<th class="r">Min 17</th><th class="r">Min 18</th></tr></thead><tbody>${prows}</tbody></table>`;
+}
+setTimeout(buildScenarios, 80);
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const res = computeAll(state.cuts, false).res;
+  let out = "Event\tAdopted cut\tProposed cut\tChange (s)\tProjected entries\n";
+  for (let i = 0; i < EV.length; i++){
+    const ch = state.cuts[i] - EV[i].cut;
+    out += `#${EV[i].n} ${EV[i].label}\t${fmt(EV[i].cut)}\t${fmt(state.cuts[i])}\t${ch>0.004?"+"+ch.toFixed(2):"0"}\t${Math.round(res[i].proj)}\n`;
+  }
+  navigator.clipboard.writeText(out).then(() => toast("Proposed cuts copied — paste into Google Sheets"),
+                                          () => toast("Copy failed — your browser blocked clipboard access"));
+});
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function notifyHeight(){
+  if (window.parent !== window){
+    requestAnimationFrame(() => parent.postMessage({odslToolHeight: document.documentElement.scrollHeight}, "*"));
+  }
+}
+document.getElementById("asOf").textContent = "Rankings as of July 12, 2026, 7:26 PM refresh (pre-divisionals; includes late July 11 meet uploads)";
+document.getElementById("rTable").textContent =
+  Object.entries(R).sort().map(([k,v]) => `${k} +${((v-1)*100).toFixed(0)}%`).join(", ");
+BASE = computeAll(EV.map(e => e.cut), true);
+render();
+</script>
+</body>
+</html>
